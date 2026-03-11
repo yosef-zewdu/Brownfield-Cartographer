@@ -1,0 +1,102 @@
+================================================================================
+BROWNFIELD CARTOGRAPHER - SURVEYOR AGENT
+================================================================================
+
+Repository: /home/yosef/Desktop/intensive/jaffle-shop
+Analyzed at: 2026-03-11 09:54:22
+--------------------------------------------------------------------------------
+
+SUMMARY
+--------------------------------------------------------------------------------
+Total modules analyzed: 37
+Graph nodes: 37
+Graph edges: 0
+Circular dependencies: 0
+Dead code candidates: 1
+Analysis errors: 0
+
+LANGUAGE BREAKDOWN
+--------------------------------------------------------------------------------
+yaml: 21 files (56.8%)
+sql: 15 files (40.5%)
+python: 1 files (2.7%)
+
+COMPLEXITY ANALYSIS
+--------------------------------------------------------------------------------
+Total complexity: 2,441 AST nodes
+Average complexity: 66 nodes per file
+
+Top 10 most complex modules:
+   1. .github/workflows/scripts/dbt_cloud_run_job.py
+      Complexity: 930 AST nodes
+   2. models/marts/orders.yml
+      Complexity: 184 AST nodes
+   3. models/marts/order_items.yml
+      Complexity: 182 AST nodes
+   4. models/marts/customers.yml
+      Complexity: 108 AST nodes
+   5. .github/workflows/ci.yml
+      Complexity: 82 AST nodes
+   6. .github/workflows/cd_prod.yml
+      Complexity: 80 AST nodes
+   7. .github/workflows/cd_staging.yml
+      Complexity: 80 AST nodes
+   8. models/marts/orders.sql
+      Complexity: 78 AST nodes
+   9. models/marts/order_items.sql
+      Complexity: 67 AST nodes
+  10. models/marts/customers.sql
+      Complexity: 59 AST nodes
+
+ARCHITECTURAL HUB ANALYSIS (PageRank)
+--------------------------------------------------------------------------------
+Top 10 architectural hubs (most imported modules):
+   1. .pre-commit-config.yaml
+      PageRank: 0.0270 | Imported by: 0 modules
+   2. package-lock.yml
+      PageRank: 0.0270 | Imported by: 0 modules
+   3. Taskfile.yml
+      PageRank: 0.0270 | Imported by: 0 modules
+   4. packages.yml
+      PageRank: 0.0270 | Imported by: 0 modules
+   5. dbt_project.yml
+      PageRank: 0.0270 | Imported by: 0 modules
+   6. macros/generate_schema_name.sql
+      PageRank: 0.0270 | Imported by: 0 modules
+   7. macros/cents_to_dollars.sql
+      PageRank: 0.0270 | Imported by: 0 modules
+   8. models/marts/customers.sql
+      PageRank: 0.0270 | Imported by: 0 modules
+   9. models/marts/products.yml
+      PageRank: 0.0270 | Imported by: 0 modules
+  10. models/marts/supplies.yml
+      PageRank: 0.0270 | Imported by: 0 modules
+
+CODE QUALITY ANALYSIS
+--------------------------------------------------------------------------------
+✓ No circular dependencies found!
+
+⚠ Found 1 dead code candidates:
+  1. .github/workflows/scripts/dbt_cloud_run_job.py
+     Reason: Has exports but no imports
+
+GIT VELOCITY (Last 90 Days)
+--------------------------------------------------------------------------------
+2 files changed in last 90 days
+
+Top 10 most frequently changed files:
+   1. .pre-commit-config.yaml
+      Commits: 1
+   2. packages.yml
+      Commits: 1
+
+================================================================================
+OUTPUT FILES
+================================================================================
+1. module_graph.json - Complete graph with all metadata
+2. analysis_report.txt - This human-readable summary
+
+Next Steps:
+  - Inspect the graph JSON for detailed analysis
+  - Use the graph for further processing
+  - Run incremental updates as the codebase changes
