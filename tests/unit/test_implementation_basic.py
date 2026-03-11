@@ -12,6 +12,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
 from models import ModuleNode, ProvenanceMetadata
 from analyzers.language_router import LanguageRouter
 from analyzers.tree_sitter_analyzer import ModuleAnalyzer
+from analyzers.sql_lineage import SQLLineageAnalyzer
+from analyzers.dbt_project_analyzer import DBTProjectAnalyzer
+from analyzers.dag_config_parser import AirflowDAGAnalyzer
 from analyzers.git_velocity_analyzer import GitVelocityAnalyzer
 from analyzers.graph_serializer import GraphSerializer
 from agents.surveyor import SurveyorAgent
@@ -160,6 +163,49 @@ async def async_func(data: dict) -> None:
         
         finally:
             Path(temp_file).unlink()
+
+
+class TestSQLLineageAnalyzer:
+    """Test SQLLineageAnalyzer functionality."""
+    
+    def test_sql_parsing(self):
+        """Test basic SQL parsing."""
+        analyzer = SQLLineageAnalyzer()
+        
+        sql = "SELECT * FROM users JOIN orders ON users.id = orders.user_id"
+        transformations = analyzer.parse_sql(sql, source_file="test.sql")
+        assert len(transformations) > 0
+        assert transformations[0].transformation_type == "sql"
+    
+    def test_table_dependency_extraction(self):
+        """Test extraction of table dependencies."""
+        analyzer = SQLLineageAnalyzer()
+        
+        sql = "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id"
+        transformations = analyzer.parse_sql(sql, source_file="test.sql")
+        
+        assert len(transformations) > 0
+        t = transformations[0]
+        assert 'users' in t.source_datasets or 'u' in t.source_datasets
+        assert 'orders' in t.source_datasets or 'o' in t.source_datasets
+    
+    def test_create_table_parsing(self):
+        """Test parsing of CREATE TABLE statements."""
+        analyzer = SQLLineageAnalyzer()
+        
+        sql = """
+        CREATE TABLE user_summary AS
+        SELECT user_id, COUNT(*) as order_count
+        FROM orders
+        GROUP BY user_id
+        """
+        
+        transformations = analyzer.parse_sql(sql, source_file="test.sql")
+        assert len(transformations) > 0
+        t = transformations[0]
+        assert 'orders' in t.source_datasets
+        assert 'user_summary' in t.target_datasets
+
 
 class TestGitVelocityAnalyzer:
     """Test GitVelocityAnalyzer functionality."""
