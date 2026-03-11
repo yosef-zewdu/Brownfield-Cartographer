@@ -6,4 +6,6 @@
 TRP 1 Challenge Week 4_ The Brownfield Cartographer.md
 
 __pycache__/
+.pytest_cache/
 
+notes/
