@@ -51,11 +51,11 @@ class SurveyorAgent:
         # Enrich with git velocity data
         git_analyzer = GitVelocityAnalyzer(repo_path)
         if git_analyzer.has_git:
-            velocities = git_analyzer.get_all_file_velocities(days=30)
+            velocities = git_analyzer.get_all_file_velocities(days=90)
             for module in modules:
                 # Get relative path from repo root
                 rel_path = Path(module.path).relative_to(repo_path_obj)
-                module.change_velocity_30d = velocities.get(str(rel_path), 0)
+                module.change_velocity = velocities.get(str(rel_path), 0)
         
         # Build module graph
         graph = self.build_module_graph(modules, repo_path)
