@@ -1,5 +1,6 @@
 # The Brownfield Cartographer - Docker Environment
-# Use a specialized uv image for faster builds
+# Multi-stage build for optimized image size
+
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
@@ -12,29 +13,42 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     uv sync --frozen --no-install-project --no-dev
 
-# Copy the rest of the application
-ADD . /app
+# Copy the application source
+COPY src/ /app/src/
+COPY pyproject.toml uv.lock /app/
+
+# Install the project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
 # Final stage
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Copy the environment from the builder
-COPY --from=builder /app /app
+# Copy the virtual environment and application from builder
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/src /app/src
 
-# Install system dependencies for docling/torch if needed
-# (Assuming slim is enough for basic CPU run, otherwise add libgl1, etc.)
+# Install system dependencies for tree-sitter and other native libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
     libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Define volume for target repository analysis
-VOLUME /repo
+# Set up Python path
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app:$PYTHONPATH"
 
-# Set entrypoint
-ENTRYPOINT ["python", "src/cli.py"]
+# Define volume for target repository analysis
+VOLUME ["/repo"]
+
+# Set working directory for analysis
+WORKDIR /repo
+
+# Set entrypoint to the CLI
+ENTRYPOINT ["python", "-m", "src.cli"]
 CMD ["--help"]
 
 
