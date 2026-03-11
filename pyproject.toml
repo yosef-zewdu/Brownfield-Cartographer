@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brownfield-cartographer"
+version = "0.1.0"
+description = "Multi-agent codebase intelligence system for rapid brownfield codebase understanding"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "tree-sitter>=0.21.0",
+    "tree-sitter-python>=0.21.0",
+    "tree-sitter-javascript>=0.21.0",
+    "networkx>=3.2",
+    "pydantic>=2.5.0",
+    "sqlglot>=20.0.0",
+    "hypothesis>=6.92.0",
+    "pytest>=7.4.0",
+    "pytest-mock>=3.12.0",
+    "pyyaml>=6.0",
+    "numpy>=2.2.6",
+    "scipy>=1.15.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-cov>=4.1.0",
+    "black>=23.12.0",
+    "ruff>=0.1.9",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
