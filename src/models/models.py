@@ -37,7 +37,7 @@ class ModuleNode(BaseModel):
     purpose_statement: Optional[str] = None
     domain_cluster: Optional[str] = None
     complexity_score: int = Field(ge=0)  # Must be non-negative
-    change_velocity_30d: Optional[int] = None
+    change_velocity: Optional[int] = None  # Number of commits in configured time window (default: 90 days)
     is_dead_code_candidate: bool = False
     last_modified: Optional[datetime] = None
     imports: List[str] = Field(default_factory=list)
