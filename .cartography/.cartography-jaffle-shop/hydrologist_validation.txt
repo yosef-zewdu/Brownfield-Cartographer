@@ -1,0 +1,134 @@
+================================================================================
+HYDROLOGIST AGENT - COMPREHENSIVE VALIDATION REPORT
+================================================================================
+
+Repository: /home/yosef/Desktop/intensive/jaffle-shop
+Validated at: 2026-03-11 04:19:15
+--------------------------------------------------------------------------------
+
+EXECUTIVE SUMMARY
+================================================================================
+
+Total Datasets Discovered: 19
+Total Transformations Discovered: 15
+Lineage Graph Nodes: 34
+Lineage Graph Edges: 30
+Source Nodes (in-degree 0): 9
+Sink Nodes (out-degree 0): 7
+
+================================================================================
+NODE TYPE BREAKDOWN
+================================================================================
+
+Dataset Nodes: 19
+Transformation Nodes: 15
+
+================================================================================
+DATASET ANALYSIS
+================================================================================
+
+Storage Type Breakdown:
+  table: 19
+
+================================================================================
+TRANSFORMATION ANALYSIS
+================================================================================
+
+Transformation Type Breakdown:
+  dbt_model: 13
+  sql: 2
+
+================================================================================
+DBT MODEL ANALYSIS
+================================================================================
+
+Total dbt Models: 13
+
+Model Breakdown:
+  Staging Models: 6
+  Mart Models: 7
+  Other Models: 0
+
+================================================================================
+DATA OPERATION ANALYSIS
+================================================================================
+
+SQL Queries: 2
+
+================================================================================
+LINEAGE EDGE ANALYSIS
+================================================================================
+
+CONSUMES Edges: 17
+PRODUCES Edges: 13
+
+Top 5 Transformations by Input Count:
+  1. dbt_model:order_items: 4 inputs
+  2. dbt_model:orders: 2 inputs
+  3. dbt_model:customers: 2 inputs
+  4. dbt_model:products: 1 inputs
+  5. dbt_model:supplies: 1 inputs
+
+Top 5 Transformations by Output Count:
+  1. dbt_model:customers: 1 outputs
+  2. dbt_model:products: 1 outputs
+  3. dbt_model:order_items: 1 outputs
+  4. dbt_model:orders: 1 outputs
+  5. dbt_model:metricflow_time_spine: 1 outputs
+
+================================================================================
+PROVENANCE ANALYSIS
+================================================================================
+
+Evidence Type Breakdown:
+  sqlglot: 28
+  heuristic: 6
+
+Confidence Distribution:
+  Average Confidence: 0.85
+  High Confidence (≥0.8): 26 (76.5%)
+  Medium Confidence (0.5-0.8): 6 (17.6%)
+  Low Confidence (<0.5): 2 (5.9%)
+
+================================================================================
+DATA FLOW ANALYSIS
+================================================================================
+
+Source Nodes (in-degree 0): 9
+Sink Nodes (out-degree 0): 7
+
+Top 5 Source Datasets:
+  1. ecom.raw_items
+     Evidence: heuristic, Confidence: 0.50
+  2. ecom.raw_customers
+     Evidence: heuristic, Confidence: 0.50
+  3. ecom.raw_products
+     Evidence: heuristic, Confidence: 0.50
+  4. ecom.raw_supplies
+     Evidence: heuristic, Confidence: 0.50
+  5. ecom.raw_orders
+     Evidence: heuristic, Confidence: 0.50
+
+Top 5 Sink Datasets:
+  1. customers
+     Evidence: sqlglot, Confidence: 1.00
+  2. products
+     Evidence: sqlglot, Confidence: 1.00
+  3. metricflow_time_spine
+     Evidence: sqlglot, Confidence: 1.00
+  4. locations
+     Evidence: sqlglot, Confidence: 1.00
+  5. supplies
+     Evidence: sqlglot, Confidence: 1.00
+
+================================================================================
+VALIDATION SUMMARY
+================================================================================
+
+All validation checks completed successfully.
+The Hydrologist Agent successfully analyzed the repository and
+extracted comprehensive data lineage with full provenance tracking.
+
+================================================================================
+END OF REPORT
+================================================================================

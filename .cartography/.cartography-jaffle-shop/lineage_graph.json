@@ -1,0 +1,1270 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "node_type": "dataset",
+      "name": "customers",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/marts/customers.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/customers.sql",
+        "line_range": [
+          1,
+          59
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "customers"
+    },
+    {
+      "node_type": "dataset",
+      "name": "products",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/marts/products.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/products.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "products"
+    },
+    {
+      "node_type": "dataset",
+      "name": "order_items",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/marts/order_items.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "order_items"
+    },
+    {
+      "node_type": "dataset",
+      "name": "orders",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/marts/orders.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/orders.sql",
+        "line_range": [
+          1,
+          78
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "orders"
+    },
+    {
+      "node_type": "dataset",
+      "name": "metricflow_time_spine",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/marts/metricflow_time_spine.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/metricflow_time_spine.sql",
+        "line_range": [
+          1,
+          20
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "metricflow_time_spine"
+    },
+    {
+      "node_type": "dataset",
+      "name": "locations",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/marts/locations.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/locations.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "locations"
+    },
+    {
+      "node_type": "dataset",
+      "name": "supplies",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/marts/supplies.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/supplies.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "supplies"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_orders",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/staging/stg_orders.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_orders.sql",
+        "line_range": [
+          1,
+          34
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_orders"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_products",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/staging/stg_products.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_products.sql",
+        "line_range": [
+          1,
+          35
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_products"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_supplies",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/staging/stg_supplies.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_supplies.sql",
+        "line_range": [
+          1,
+          32
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_supplies"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_order_items",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/staging/stg_order_items.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_order_items.sql",
+        "line_range": [
+          1,
+          23
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_order_items"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_customers",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/staging/stg_customers.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_customers.sql",
+        "line_range": [
+          1,
+          24
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_customers"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_locations",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "models/staging/stg_locations.sql",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_locations.sql",
+        "line_range": [
+          1,
+          30
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_locations"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_items",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "inferred_from_transformations",
+      "provenance": {
+        "evidence_type": "heuristic",
+        "source_file": "inferred_from_transformations",
+        "line_range": null,
+        "confidence": 0.5,
+        "resolution_status": "inferred"
+      },
+      "id": "ecom.raw_items"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_customers",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "inferred_from_transformations",
+      "provenance": {
+        "evidence_type": "heuristic",
+        "source_file": "inferred_from_transformations",
+        "line_range": null,
+        "confidence": 0.5,
+        "resolution_status": "inferred"
+      },
+      "id": "ecom.raw_customers"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_products",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "inferred_from_transformations",
+      "provenance": {
+        "evidence_type": "heuristic",
+        "source_file": "inferred_from_transformations",
+        "line_range": null,
+        "confidence": 0.5,
+        "resolution_status": "inferred"
+      },
+      "id": "ecom.raw_products"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_supplies",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "inferred_from_transformations",
+      "provenance": {
+        "evidence_type": "heuristic",
+        "source_file": "inferred_from_transformations",
+        "line_range": null,
+        "confidence": 0.5,
+        "resolution_status": "inferred"
+      },
+      "id": "ecom.raw_supplies"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_orders",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "inferred_from_transformations",
+      "provenance": {
+        "evidence_type": "heuristic",
+        "source_file": "inferred_from_transformations",
+        "line_range": null,
+        "confidence": 0.5,
+        "resolution_status": "inferred"
+      },
+      "id": "ecom.raw_orders"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_stores",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "inferred_from_transformations",
+      "provenance": {
+        "evidence_type": "heuristic",
+        "source_file": "inferred_from_transformations",
+        "line_range": null,
+        "confidence": 0.5,
+        "resolution_status": "inferred"
+      },
+      "id": "ecom.raw_stores"
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:customers",
+      "source_datasets": [
+        "stg_customers",
+        "orders"
+      ],
+      "target_datasets": [
+        "customers"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/marts/customers.sql",
+      "line_range": [
+        1,
+        59
+      ],
+      "sql_query": "with\n\ncustomers as (\n\n    select * from {{ ref('stg_customers') }}\n\n),\n\norders as (\n\n    select * from {{ ref('orders') }}\n\n),\n\ncustomer_orders_summary as (\n\n    select\n        orders.customer_id,\n\n        count(distinct orders.order_id) as count_lifetime_orders,\n        count(distinct orders.order_id) > 1 as is_repeat_buyer,\n        min(orders.ordered_at) as first_ordered_at,\n        max(orders.ordered_at) as last_ordered_at,\n        sum(orders.subtotal) as lifetime_spend_pretax,\n        sum(orders.tax_paid) as lifetime_tax_paid,\n        sum(orders.order_total) as lifetime_spend\n\n    from orders\n\n    group by 1\n\n),\n\njoined as (\n\n    select\n        customers.*,\n\n        customer_orders_summary.count_lifetime_orders,\n        customer_orders_summary.first_ordered_at,\n        customer_orders_summary.last_ordered_at,\n        customer_orders_summary.lifetime_spend_pretax,\n        customer_orders_summary.lifetime_tax_paid,\n        customer_orders_summary.lifetime_spend,\n\n        case\n            when customer_orders_summary.is_repeat_buyer then 'returning'\n            else 'new'\n        end as customer_type\n\n    from customers\n\n    left join customer_orders_summary\n        on customers.customer_id = customer_orders_summary.customer_id\n\n)\n\nselect * from joined\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/customers.sql",
+        "line_range": [
+          1,
+          59
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:products",
+      "source_datasets": [
+        "stg_products"
+      ],
+      "target_datasets": [
+        "products"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/marts/products.sql",
+      "line_range": [
+        1,
+        10
+      ],
+      "sql_query": "with\n\nproducts as (\n\n    select * from {{ ref('stg_products') }}\n\n)\n\nselect * from products\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/products.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:order_items",
+      "source_datasets": [
+        "stg_order_items",
+        "stg_orders",
+        "stg_products",
+        "stg_supplies"
+      ],
+      "target_datasets": [
+        "order_items"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/marts/order_items.sql",
+      "line_range": [
+        1,
+        67
+      ],
+      "sql_query": "with\n\norder_items as (\n\n    select * from {{ ref('stg_order_items') }}\n\n),\n\n\norders as (\n\n    select * from {{ ref('stg_orders') }}\n\n),\n\nproducts as (\n\n    select * from {{ ref('stg_products') }}\n\n),\n\nsupplies as (\n\n    select * from {{ ref('stg_supplies') }}\n\n),\n\norder_supplies_summary as (\n\n    select\n        product_id,\n\n        sum(supply_cost) as supply_cost\n\n    from supplies\n\n    group by 1\n\n),\n\njoined as (\n\n    select\n        order_items.*,\n\n        orders.ordered_at,\n\n        products.product_name,\n        products.product_price,\n        products.is_food_item,\n        products.is_drink_item,\n\n        order_supplies_summary.supply_cost\n\n    from order_items\n\n    left join orders on order_items.order_id = orders.order_id\n\n    left join products on order_items.product_id = products.product_id\n\n    left join order_supplies_summary\n        on order_items.product_id = order_supplies_summary.product_id\n\n)\n\nselect * from joined\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:orders",
+      "source_datasets": [
+        "stg_orders",
+        "order_items"
+      ],
+      "target_datasets": [
+        "orders"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/marts/orders.sql",
+      "line_range": [
+        1,
+        78
+      ],
+      "sql_query": "with\n\norders as (\n\n    select * from {{ ref('stg_orders') }}\n\n),\n\norder_items as (\n\n    select * from {{ ref('order_items') }}\n\n),\n\norder_items_summary as (\n\n    select\n        order_id,\n\n        sum(supply_cost) as order_cost,\n        sum(product_price) as order_items_subtotal,\n        count(order_item_id) as count_order_items,\n        sum(\n            case\n                when is_food_item then 1\n                else 0\n            end\n        ) as count_food_items,\n        sum(\n            case\n                when is_drink_item then 1\n                else 0\n            end\n        ) as count_drink_items\n\n    from order_items\n\n    group by 1\n\n),\n\ncompute_booleans as (\n\n    select\n        orders.*,\n\n        order_items_summary.order_cost,\n        order_items_summary.order_items_subtotal,\n        order_items_summary.count_food_items,\n        order_items_summary.count_drink_items,\n        order_items_summary.count_order_items,\n        order_items_summary.count_food_items > 0 as is_food_order,\n        order_items_summary.count_drink_items > 0 as is_drink_order\n\n    from orders\n\n    left join\n        order_items_summary\n        on orders.order_id = order_items_summary.order_id\n\n),\n\ncustomer_order_count as (\n\n    select\n        *,\n\n        row_number() over (\n            partition by customer_id\n            order by ordered_at asc\n        ) as customer_order_number\n\n    from compute_booleans\n\n)\n\nselect * from customer_order_count\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/orders.sql",
+        "line_range": [
+          1,
+          78
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:metricflow_time_spine",
+      "source_datasets": [],
+      "target_datasets": [
+        "metricflow_time_spine"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/marts/metricflow_time_spine.sql",
+      "line_range": [
+        1,
+        20
+      ],
+      "sql_query": "-- metricflow_time_spine.sql\nwith\n\ndays as (\n\n    --for BQ adapters use \"DATE('01/01/2000','mm/dd/yyyy')\"\n    {{ dbt_date.get_base_dates(n_dateparts=365*10, datepart=\"day\") }}\n\n),\n\ncast_to_date as (\n\n    select cast(date_day as date) as date_day\n\n    from days\n\n)\n\nselect * from cast_to_date\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/metricflow_time_spine.sql",
+        "line_range": [
+          1,
+          20
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:locations",
+      "source_datasets": [
+        "stg_locations"
+      ],
+      "target_datasets": [
+        "locations"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/marts/locations.sql",
+      "line_range": [
+        1,
+        10
+      ],
+      "sql_query": "with\n\nlocations as (\n\n    select * from {{ ref('stg_locations') }}\n\n)\n\nselect * from locations\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/locations.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:supplies",
+      "source_datasets": [
+        "stg_supplies"
+      ],
+      "target_datasets": [
+        "supplies"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/marts/supplies.sql",
+      "line_range": [
+        1,
+        10
+      ],
+      "sql_query": "with\n\nsupplies as (\n\n    select * from {{ ref('stg_supplies') }}\n\n)\n\nselect * from supplies\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/supplies.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:stg_orders",
+      "source_datasets": [
+        "ecom.raw_orders"
+      ],
+      "target_datasets": [
+        "stg_orders"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/staging/stg_orders.sql",
+      "line_range": [
+        1,
+        34
+      ],
+      "sql_query": "with\n\nsource as (\n\n    select * from {{ source('ecom', 'raw_orders') }}\n\n),\n\nrenamed as (\n\n    select\n\n        ----------  ids\n        id as order_id,\n        store_id as location_id,\n        customer as customer_id,\n\n        ---------- numerics\n        subtotal as subtotal_cents,\n        tax_paid as tax_paid_cents,\n        order_total as order_total_cents,\n        {{ cents_to_dollars('subtotal') }} as subtotal,\n        {{ cents_to_dollars('tax_paid') }} as tax_paid,\n        {{ cents_to_dollars('order_total') }} as order_total,\n\n        ---------- timestamps\n        {{ dbt.date_trunc('day','ordered_at') }} as ordered_at\n\n    from source\n\n)\n\nselect * from renamed\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_orders.sql",
+        "line_range": [
+          1,
+          34
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:stg_products",
+      "source_datasets": [
+        "ecom.raw_products"
+      ],
+      "target_datasets": [
+        "stg_products"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/staging/stg_products.sql",
+      "line_range": [
+        1,
+        35
+      ],
+      "sql_query": "with\n\nsource as (\n\n    select * from {{ source('ecom', 'raw_products') }}\n\n),\n\nrenamed as (\n\n    select\n\n        ----------  ids\n        sku as product_id,\n\n        ---------- text\n        name as product_name,\n        type as product_type,\n        description as product_description,\n\n\n        ---------- numerics\n        {{ cents_to_dollars('price') }} as product_price,\n\n        ---------- booleans\n        coalesce(type = 'jaffle', false) as is_food_item,\n\n        coalesce(type = 'beverage', false) as is_drink_item\n\n    from source\n\n)\n\nselect * from renamed\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_products.sql",
+        "line_range": [
+          1,
+          35
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:stg_supplies",
+      "source_datasets": [
+        "ecom.raw_supplies"
+      ],
+      "target_datasets": [
+        "stg_supplies"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/staging/stg_supplies.sql",
+      "line_range": [
+        1,
+        32
+      ],
+      "sql_query": "with\n\nsource as (\n\n    select * from {{ source('ecom', 'raw_supplies') }}\n\n),\n\nrenamed as (\n\n    select\n\n        ----------  ids\n        {{ dbt_utils.generate_surrogate_key(['id', 'sku']) }} as supply_uuid,\n        id as supply_id,\n        sku as product_id,\n\n        ---------- text\n        name as supply_name,\n\n        ---------- numerics\n        {{ cents_to_dollars('cost') }} as supply_cost,\n\n        ---------- booleans\n        perishable as is_perishable_supply\n\n    from source\n\n)\n\nselect * from renamed\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_supplies.sql",
+        "line_range": [
+          1,
+          32
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:stg_order_items",
+      "source_datasets": [
+        "ecom.raw_items"
+      ],
+      "target_datasets": [
+        "stg_order_items"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/staging/stg_order_items.sql",
+      "line_range": [
+        1,
+        23
+      ],
+      "sql_query": "with\n\nsource as (\n\n    select * from {{ source('ecom', 'raw_items') }}\n\n),\n\nrenamed as (\n\n    select\n\n        ----------  ids\n        id as order_item_id,\n        order_id,\n        sku as product_id\n\n    from source\n\n)\n\nselect * from renamed\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_order_items.sql",
+        "line_range": [
+          1,
+          23
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:stg_customers",
+      "source_datasets": [
+        "ecom.raw_customers"
+      ],
+      "target_datasets": [
+        "stg_customers"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/staging/stg_customers.sql",
+      "line_range": [
+        1,
+        24
+      ],
+      "sql_query": "with\n\nsource as (\n\n    select * from {{ source('ecom', 'raw_customers') }}\n\n),\n\nrenamed as (\n\n    select\n\n        ----------  ids\n        id as customer_id,\n\n        ---------- text\n        name as customer_name\n\n    from source\n\n)\n\nselect * from renamed\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_customers.sql",
+        "line_range": [
+          1,
+          24
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "dbt_model:stg_locations",
+      "source_datasets": [
+        "ecom.raw_stores"
+      ],
+      "target_datasets": [
+        "stg_locations"
+      ],
+      "transformation_type": "dbt_model",
+      "source_file": "models/staging/stg_locations.sql",
+      "line_range": [
+        1,
+        30
+      ],
+      "sql_query": "with\n\nsource as (\n\n    select * from {{ source('ecom', 'raw_stores') }}\n\n),\n\nrenamed as (\n\n    select\n\n        ----------  ids\n        id as location_id,\n\n        ---------- text\n        name as location_name,\n\n        ---------- numerics\n        tax_rate,\n\n        ---------- timestamps\n        {{ dbt.date_trunc('day', 'opened_at') }} as opened_date\n\n    from source\n\n)\n\nselect * from renamed\n",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_locations.sql",
+        "line_range": [
+          1,
+          30
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "/home/yosef/Desktop/intensive/jaffle-shop/macros/generate_schema_name.sql:23:unparseable_sql_0",
+      "source_datasets": [],
+      "target_datasets": [],
+      "transformation_type": "sql",
+      "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/macros/generate_schema_name.sql",
+      "line_range": [
+        23,
+        38
+      ],
+      "sql_query": "{% macro generate_schema_name(custom_schema_name, node) %}\n    {% set default_schema = target.schema %}\n    {# seeds go in a global `raw` schema #}\n    {% if node.resource_type == 'seed' %}\n        {{ custom_schema_name | trim }}\n    {# non-specified schemas go to the default target schema #}\n    {% elif custom_schema_name is none %}\n        {{ default_schema }}\n    {# specified custom schema names go to the schema name prepended with the the default schema name in prod (as this is an example project we want the schemas clearly labeled) #}\n    {% elif target.name == 'prod' %}\n        {{ default_schema }}_{{ custom_schema_name | trim }}\n    {# specified custom schemas go to the default target schema for non-prod targets #}\n    {% else %}\n        {{ default_schema }}\n    {% endif %}\n{% endmacro %}",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/macros/generate_schema_name.sql",
+        "line_range": [
+          23,
+          38
+        ],
+        "confidence": 0.0,
+        "resolution_status": "dynamic"
+      }
+    },
+    {
+      "node_type": "transformation",
+      "id": "/home/yosef/Desktop/intensive/jaffle-shop/macros/cents_to_dollars.sql:21:unparseable_sql_0",
+      "source_datasets": [],
+      "target_datasets": [],
+      "transformation_type": "sql",
+      "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/macros/cents_to_dollars.sql",
+      "line_range": [
+        21,
+        36
+      ],
+      "sql_query": "{# A basic example for a project-wide macro to cast a column uniformly #}\n{% macro cents_to_dollars(column_name) -%}\n    {{ return(adapter.dispatch('cents_to_dollars')(column_name)) }}\n{%- endmacro %}\n{% macro default__cents_to_dollars(column_name) -%}\n    ({{ column_name }} / 100)::numeric(16, 2)\n{%- endmacro %}\n{% macro postgres__cents_to_dollars(column_name) -%}\n    ({{ column_name }}::numeric(16, 2) / 100)\n{%- endmacro %}\n{% macro bigquery__cents_to_dollars(column_name) %}\n    round(cast(({{ column_name }} / 100) as numeric), 2)\n{% endmacro %}\n{% macro fabric__cents_to_dollars(column_name) %}\n    cast({{ column_name }} / 100 as numeric(16,2))\n{% endmacro %}",
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/macros/cents_to_dollars.sql",
+        "line_range": [
+          21,
+          36
+        ],
+        "confidence": 0.0,
+        "resolution_status": "dynamic"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_type": "consumes",
+      "source": "order_items",
+      "target": "dbt_model:orders",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/orders.sql",
+        "line_range": [
+          1,
+          78
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "orders",
+      "target": "dbt_model:customers",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/customers.sql",
+        "line_range": [
+          1,
+          59
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_orders",
+      "target": "dbt_model:order_items",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_orders",
+      "target": "dbt_model:orders",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/orders.sql",
+        "line_range": [
+          1,
+          78
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_products",
+      "target": "dbt_model:products",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/products.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_products",
+      "target": "dbt_model:order_items",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_supplies",
+      "target": "dbt_model:order_items",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_supplies",
+      "target": "dbt_model:supplies",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/supplies.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_order_items",
+      "target": "dbt_model:order_items",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_customers",
+      "target": "dbt_model:customers",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/customers.sql",
+        "line_range": [
+          1,
+          59
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "stg_locations",
+      "target": "dbt_model:locations",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/locations.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "ecom.raw_items",
+      "target": "dbt_model:stg_order_items",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_order_items.sql",
+        "line_range": [
+          1,
+          23
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "ecom.raw_customers",
+      "target": "dbt_model:stg_customers",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_customers.sql",
+        "line_range": [
+          1,
+          24
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "ecom.raw_products",
+      "target": "dbt_model:stg_products",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_products.sql",
+        "line_range": [
+          1,
+          35
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "ecom.raw_supplies",
+      "target": "dbt_model:stg_supplies",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_supplies.sql",
+        "line_range": [
+          1,
+          32
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "ecom.raw_orders",
+      "target": "dbt_model:stg_orders",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_orders.sql",
+        "line_range": [
+          1,
+          34
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
+      "source": "ecom.raw_stores",
+      "target": "dbt_model:stg_locations",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_locations.sql",
+        "line_range": [
+          1,
+          30
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:customers",
+      "target": "customers",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/customers.sql",
+        "line_range": [
+          1,
+          59
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:products",
+      "target": "products",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/products.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:order_items",
+      "target": "order_items",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:orders",
+      "target": "orders",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/orders.sql",
+        "line_range": [
+          1,
+          78
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:metricflow_time_spine",
+      "target": "metricflow_time_spine",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/metricflow_time_spine.sql",
+        "line_range": [
+          1,
+          20
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:locations",
+      "target": "locations",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/locations.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:supplies",
+      "target": "supplies",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/supplies.sql",
+        "line_range": [
+          1,
+          10
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:stg_orders",
+      "target": "stg_orders",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_orders.sql",
+        "line_range": [
+          1,
+          34
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:stg_products",
+      "target": "stg_products",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_products.sql",
+        "line_range": [
+          1,
+          35
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:stg_supplies",
+      "target": "stg_supplies",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_supplies.sql",
+        "line_range": [
+          1,
+          32
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:stg_order_items",
+      "target": "stg_order_items",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_order_items.sql",
+        "line_range": [
+          1,
+          23
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:stg_customers",
+      "target": "stg_customers",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_customers.sql",
+        "line_range": [
+          1,
+          24
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "produces",
+      "source": "dbt_model:stg_locations",
+      "target": "stg_locations",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_locations.sql",
+        "line_range": [
+          1,
+          30
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    }
+  ]
+}
