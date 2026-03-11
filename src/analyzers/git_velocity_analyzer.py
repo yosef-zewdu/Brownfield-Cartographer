@@ -19,13 +19,13 @@ class GitVelocityAnalyzer:
         self.repo_path = Path(repo_path)
         self.has_git = (self.repo_path / '.git').exists()
     
-    def get_change_velocity(self, file_path: str, days: int = 30) -> Optional[int]:
+    def get_change_velocity(self, file_path: str, days: int = 90) -> Optional[int]:
         """
         Get the number of commits for a file in the last N days.
         
         Args:
             file_path: Path to the file relative to repo root
-            days: Number of days to look back (default: 30)
+            days: Number of days to look back (default: 90)
         
         Returns:
             Number of commits, or None if git is not available
@@ -64,12 +64,12 @@ class GitVelocityAnalyzer:
         except (subprocess.TimeoutExpired, subprocess.SubprocessError, FileNotFoundError):
             return None
     
-    def get_all_file_velocities(self, days: int = 30) -> Dict[str, int]:
+    def get_all_file_velocities(self, days: int = 90) -> Dict[str, int]:
         """
         Get change velocities for all files in the repository.
         
         Args:
-            days: Number of days to look back (default: 30)
+            days: Number of days to look back (default: 90)
         
         Returns:
             Dictionary mapping file paths to commit counts
@@ -111,13 +111,13 @@ class GitVelocityAnalyzer:
         except (subprocess.TimeoutExpired, subprocess.SubprocessError, FileNotFoundError):
             return {}
     
-    def get_high_velocity_files(self, threshold: float = 0.8, days: int = 30) -> List[str]:
+    def get_high_velocity_files(self, threshold: float = 0.8, days: int = 90) -> List[str]:
         """
         Identify high-velocity files using Pareto analysis.
         
         Args:
             threshold: Cumulative percentage threshold (default: 0.8 for 80%)
-            days: Number of days to look back (default: 30)
+            days: Number of days to look back (default: 90)
         
         Returns:
             List of file paths that account for the threshold percentage of changes
