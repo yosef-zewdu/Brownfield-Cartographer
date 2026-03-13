@@ -296,7 +296,7 @@
     },
     {
       "node_type": "dataset",
-      "name": "ecom.raw_customers",
+      "name": "ecom.raw_stores",
       "storage_type": "table",
       "schema_snapshot": null,
       "freshness_sla": null,
@@ -310,25 +310,7 @@
         "confidence": 0.5,
         "resolution_status": "inferred"
       },
-      "id": "ecom.raw_customers"
-    },
-    {
-      "node_type": "dataset",
-      "name": "ecom.raw_products",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "inferred_from_transformations",
-      "provenance": {
-        "evidence_type": "heuristic",
-        "source_file": "inferred_from_transformations",
-        "line_range": null,
-        "confidence": 0.5,
-        "resolution_status": "inferred"
-      },
-      "id": "ecom.raw_products"
+      "id": "ecom.raw_stores"
     },
     {
       "node_type": "dataset",
@@ -350,6 +332,24 @@
     },
     {
       "node_type": "dataset",
+      "name": "ecom.raw_products",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "inferred_from_transformations",
+      "provenance": {
+        "evidence_type": "heuristic",
+        "source_file": "inferred_from_transformations",
+        "line_range": null,
+        "confidence": 0.5,
+        "resolution_status": "inferred"
+      },
+      "id": "ecom.raw_products"
+    },
+    {
+      "node_type": "dataset",
       "name": "ecom.raw_orders",
       "storage_type": "table",
       "schema_snapshot": null,
@@ -368,7 +368,7 @@
     },
     {
       "node_type": "dataset",
-      "name": "ecom.raw_stores",
+      "name": "ecom.raw_customers",
       "storage_type": "table",
       "schema_snapshot": null,
       "freshness_sla": null,
@@ -382,7 +382,7 @@
         "confidence": 0.5,
         "resolution_status": "inferred"
       },
-      "id": "ecom.raw_stores"
+      "id": "ecom.raw_customers"
     },
     {
       "node_type": "transformation",
@@ -980,31 +980,15 @@
     },
     {
       "edge_type": "consumes",
-      "source": "ecom.raw_customers",
-      "target": "dbt_model:stg_customers",
+      "source": "ecom.raw_stores",
+      "target": "dbt_model:stg_locations",
       "confidence": 1.0,
       "provenance": {
         "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_customers.sql",
+        "source_file": "models/staging/stg_locations.sql",
         "line_range": [
           1,
-          24
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      }
-    },
-    {
-      "edge_type": "consumes",
-      "source": "ecom.raw_products",
-      "target": "dbt_model:stg_products",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_products.sql",
-        "line_range": [
-          1,
-          35
+          30
         ],
         "confidence": 1.0,
         "resolution_status": "resolved"
@@ -1028,6 +1012,22 @@
     },
     {
       "edge_type": "consumes",
+      "source": "ecom.raw_products",
+      "target": "dbt_model:stg_products",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_products.sql",
+        "line_range": [
+          1,
+          35
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      }
+    },
+    {
+      "edge_type": "consumes",
       "source": "ecom.raw_orders",
       "target": "dbt_model:stg_orders",
       "confidence": 1.0,
@@ -1044,15 +1044,15 @@
     },
     {
       "edge_type": "consumes",
-      "source": "ecom.raw_stores",
-      "target": "dbt_model:stg_locations",
+      "source": "ecom.raw_customers",
+      "target": "dbt_model:stg_customers",
       "confidence": 1.0,
       "provenance": {
         "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_locations.sql",
+        "source_file": "models/staging/stg_customers.sql",
         "line_range": [
           1,
-          30
+          24
         ],
         "confidence": 1.0,
         "resolution_status": "resolved"
