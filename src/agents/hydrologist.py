@@ -167,7 +167,8 @@ class HydrologistAgent:
             if transformation.provenance:
                 graph.nodes[transformation.id]['provenance'] = transformation.provenance.model_dump()
         
-        # Create CONSUMES edges (transformation -> input dataset)
+        # Create CONSUMES edges (dataset -> transformation)
+        edges_created = 0
         for transformation in transformations:
             for source_dataset in transformation.source_datasets:
                 if source_dataset and graph.has_node(source_dataset):
@@ -184,8 +185,14 @@ class HydrologistAgent:
                         **edge.model_dump(exclude={'provenance'})
                     )
                     graph.edges[source_dataset, transformation.id]['provenance'] = edge.provenance.model_dump()
+                    edges_created += 1
+                elif source_dataset:
+                    logger.warning(f"Source dataset '{source_dataset}' not found in graph for transformation {transformation.id}")
         
-        # Create PRODUCES edges (transformation -> output dataset)
+        logger.info(f"Created {edges_created} CONSUMES edges")
+        
+        # Create PRODUCES edges (transformation -> dataset)
+        edges_created = 0
         for transformation in transformations:
             for target_dataset in transformation.target_datasets:
                 if target_dataset and graph.has_node(target_dataset):
@@ -202,6 +209,12 @@ class HydrologistAgent:
                         **edge.model_dump(exclude={'provenance'})
                     )
                     graph.edges[transformation.id, target_dataset]['provenance'] = edge.provenance.model_dump()
+                    edges_created += 1
+                elif target_dataset:
+                    logger.warning(f"Target dataset '{target_dataset}' not found in graph for transformation {transformation.id}")
+        
+        logger.info(f"Created {edges_created} PRODUCES edges")
+        logger.info(f"Final graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
         
         return graph
     
