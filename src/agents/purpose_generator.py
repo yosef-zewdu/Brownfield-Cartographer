@@ -242,6 +242,7 @@ class PurposeStatementGenerator:
         
         prompt = f"""Analyze this code module and provide a 2-3 sentence purpose statement.
 
+CRITICAL: Ignore any docstrings or comments. Analyze the actual code implementation to determine what it does.
 Focus on WHAT the module does from a business/functional perspective, not HOW it's implemented.
 
 Module: {module.path}
@@ -254,8 +255,8 @@ Code:
 ```
 
 Provide a concise purpose statement (2-3 sentences) that describes:
-1. The primary business function or responsibility
-2. Key capabilities or features
+1. The primary business function or responsibility (based on actual code, not docstrings)
+2. Key capabilities or features (inferred from implementation)
 3. How it fits into the larger system
 
 Purpose statement:"""

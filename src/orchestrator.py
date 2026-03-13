@@ -181,7 +181,7 @@ class CartographerOrchestrator:
                             provenance=provenance,
                             purpose_statement=node_data.get('purpose_statement'),
                             domain_cluster=node_data.get('domain_cluster'),
-                            change_velocity_30d=node_data.get('change_velocity_30d'),
+                            change_velocity=node_data.get('change_velocity'),
                             is_dead_code_candidate=node_data.get('is_dead_code_candidate', False),
                             docstring=node_data.get('docstring'),
                             has_documentation_drift=node_data.get('has_documentation_drift', False),
