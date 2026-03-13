@@ -7,6 +7,7 @@ from datetime import datetime
 
 from agents.surveyor import SurveyorAgent
 from agents.hydrologist import HydrologistAgent
+from agents.semanticist import SemanticistAgent
 from analyzers.graph_serializer import GraphSerializer
 
 
@@ -28,13 +29,16 @@ class CartographerOrchestrator:
         self.output_dir_name = output_dir
         self.surveyor = SurveyorAgent()
         self.hydrologist = HydrologistAgent()
+        self.semanticist = SemanticistAgent()
         self.errors = []
     
     def analyze_repository(
         self,
         repo_path: str,
         skip_surveyor: bool = False,
-        skip_hydrologist: bool = False
+        skip_hydrologist: bool = False,
+        skip_semanticist: bool = False,
+        semanticist_max_modules: Optional[int] = None
     ) -> Tuple[Optional[nx.DiGraph], Optional[nx.DiGraph]]:
         """
         Run complete analysis pipeline on a repository.
@@ -43,6 +47,8 @@ class CartographerOrchestrator:
             repo_path: Path to repository to analyze
             skip_surveyor: Skip Surveyor phase (use existing module graph)
             skip_hydrologist: Skip Hydrologist phase
+            skip_semanticist: Skip Semanticist phase
+            semanticist_max_modules: Maximum modules for Semanticist (None = all)
             
         Returns:
             Tuple of (module_graph, lineage_graph)
@@ -149,6 +155,163 @@ class CartographerOrchestrator:
         else:
             print("\n[PHASE 2] Skipping Hydrologist")
         
+        # Phase 3: Semanticist Agent
+        if not skip_semanticist and module_graph is not None:
+            print("\n[PHASE 3] Running Semanticist Agent...")
+            print("Performing LLM-powered semantic analysis...")
+            
+            try:
+                # Get modules from module graph
+                modules = []
+                for node_id in module_graph.nodes():
+                    node_data = module_graph.nodes[node_id]
+                    # Reconstruct ModuleNode from graph data
+                    from models import ModuleNode, ProvenanceMetadata
+                    
+                    provenance_data = node_data.get('provenance', {})
+                    provenance = ProvenanceMetadata(**provenance_data) if provenance_data else None
+                    
+                    if provenance:
+                        module = ModuleNode(
+                            path=node_data['path'],
+                            language=node_data['language'],
+                            complexity_score=node_data['complexity_score'],
+                            imports=node_data.get('imports', []),
+                            exports=node_data.get('exports', []),
+                            provenance=provenance,
+                            purpose_statement=node_data.get('purpose_statement'),
+                            domain_cluster=node_data.get('domain_cluster'),
+                            change_velocity_30d=node_data.get('change_velocity_30d'),
+                            is_dead_code_candidate=node_data.get('is_dead_code_candidate', False),
+                            docstring=node_data.get('docstring'),
+                            has_documentation_drift=node_data.get('has_documentation_drift', False),
+                        )
+                        modules.append(module)
+                
+                # Apply module limit if specified
+                if semanticist_max_modules and len(modules) > semanticist_max_modules:
+                    print(f"  ⚠ Large codebase detected: {len(modules)} modules")
+                    print(f"  → Sampling {semanticist_max_modules} most important modules for analysis")
+                    
+                    # Sort by PageRank (if available) or complexity
+                    modules_with_rank = []
+                    for module in modules:
+                        pagerank = module_graph.nodes[module.path].get('pagerank', 0)
+                        modules_with_rank.append((module, pagerank, module.complexity_score))
+                    
+                    # Sort by PageRank desc, then complexity desc
+                    modules_with_rank.sort(key=lambda x: (x[1], x[2]), reverse=True)
+                    modules = [m[0] for m in modules_with_rank[:semanticist_max_modules]]
+                    
+                    print(f"  → Selected {len(modules)} modules (top by PageRank and complexity)")
+                
+                # Get datasets and transformations if lineage graph exists
+                datasets = []
+                transformations = []
+                if lineage_graph is not None:
+                    from models import DatasetNode, TransformationNode
+                    
+                    for node_id in lineage_graph.nodes():
+                        node_data = lineage_graph.nodes[node_id]
+                        node_type = node_data.get('node_type')
+                        
+                        if node_type == 'dataset':
+                            provenance_data = node_data.get('provenance', {})
+                            provenance = ProvenanceMetadata(**provenance_data) if provenance_data else None
+                            
+                            if provenance:
+                                dataset = DatasetNode(
+                                    name=node_data['name'],
+                                    storage_type=node_data['storage_type'],
+                                    discovered_in=node_data['discovered_in'],
+                                    provenance=provenance,
+                                    schema_snapshot=node_data.get('schema_snapshot'),
+                                    freshness_sla=node_data.get('freshness_sla'),
+                                    owner=node_data.get('owner'),
+                                    is_source_of_truth=node_data.get('is_source_of_truth', False),
+                                )
+                                datasets.append(dataset)
+                        
+                        elif node_type == 'transformation':
+                            provenance_data = node_data.get('provenance', {})
+                            provenance = ProvenanceMetadata(**provenance_data) if provenance_data else None
+                            
+                            if provenance:
+                                transformation = TransformationNode(
+                                    id=node_data['id'],
+                                    source_datasets=node_data.get('source_datasets', []),
+                                    target_datasets=node_data.get('target_datasets', []),
+                                    transformation_type=node_data['transformation_type'],
+                                    source_file=node_data['source_file'],
+                                    line_range=tuple(node_data['line_range']),
+                                    provenance=provenance,
+                                    sql_query=node_data.get('sql_query'),
+                                )
+                                transformations.append(transformation)
+                
+                # Run semantic analysis
+                enriched_modules, day_one_answers = self.semanticist.analyze_repository(
+                    modules,
+                    module_graph,
+                    lineage_graph if lineage_graph is not None else nx.DiGraph(),
+                    datasets,
+                    transformations
+                )
+                
+                print(f"✓ Semanticist complete:")
+                print(f"  - Modules with purpose statements: {sum(1 for m in enriched_modules if m.purpose_statement)}")
+                print(f"  - Modules with drift detected: {sum(1 for m in enriched_modules if m.has_documentation_drift)}")
+                print(f"  - Domain clusters created: {len(set(m.domain_cluster for m in enriched_modules if m.domain_cluster))}")
+                print(f"  - Day-One questions answered: {len(day_one_answers)}")
+                
+                # Update module graph with enriched data
+                for module in enriched_modules:
+                    if module_graph.has_node(module.path):
+                        module_graph.nodes[module.path]['purpose_statement'] = module.purpose_statement
+                        module_graph.nodes[module.path]['domain_cluster'] = module.domain_cluster
+                        module_graph.nodes[module.path]['has_documentation_drift'] = module.has_documentation_drift
+                
+                # Save updated module graph
+                module_graph_path = output_dir / 'module_graph.json'
+                GraphSerializer.serialize_module_graph(module_graph, str(module_graph_path))
+                
+                # Save analysis report
+                self._save_semanticist_report(output_dir, enriched_modules, day_one_answers)
+                
+                # Save Day-One answers
+                import json
+                
+                # Convert Pydantic models to dicts for JSON serialization
+                def serialize_answer(obj):
+                    """Recursively serialize Pydantic models and other objects."""
+                    if hasattr(obj, 'model_dump'):
+                        return obj.model_dump()
+                    elif isinstance(obj, dict):
+                        return {k: serialize_answer(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [serialize_answer(item) for item in obj]
+                    else:
+                        return obj
+                
+                serializable_answers = serialize_answer(day_one_answers)
+                
+                answers_path = output_dir / 'day_one_answers.json'
+                with open(answers_path, 'w') as f:
+                    json.dump(serializable_answers, f, indent=2)
+                print(f"  - Day-One answers saved: {answers_path}")
+                
+            except Exception as e:
+                error_msg = f"Semanticist failed: {str(e)}"
+                self.errors.append(error_msg)
+                print(f"✗ {error_msg}")
+                import traceback
+                traceback.print_exc()
+        else:
+            if skip_semanticist:
+                print("\n[PHASE 3] Skipping Semanticist")
+            else:
+                print("\n[PHASE 3] Skipping Semanticist (module graph not available)")
+        
         # Summary
         print("\n" + "=" * 80)
         print("ANALYSIS COMPLETE")
@@ -219,6 +382,73 @@ class CartographerOrchestrator:
             f.write("\n" + "=" * 80 + "\n")
             f.write("END OF REPORT\n")
             f.write("=" * 80 + "\n")
+    
+    def _save_semanticist_report(self, output_dir: Path, modules, day_one_answers) -> None:
+        """Save Semanticist analysis report."""
+        report_path = output_dir / 'semanticist_report.txt'
+        
+        with open(report_path, 'w') as f:
+            f.write("=" * 80 + "\n")
+            f.write("SEMANTICIST AGENT - ANALYSIS REPORT\n")
+            f.write("=" * 80 + "\n\n")
+            f.write(f"Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            
+            f.write("SUMMARY\n")
+            f.write("-" * 80 + "\n")
+            f.write(f"Total modules analyzed: {len(modules)}\n")
+            
+            modules_with_purpose = sum(1 for m in modules if m.purpose_statement)
+            f.write(f"Modules with purpose statements: {modules_with_purpose}\n")
+            
+            modules_with_drift = sum(1 for m in modules if m.has_documentation_drift)
+            f.write(f"Modules with documentation drift: {modules_with_drift}\n")
+            
+            domain_clusters = set(m.domain_cluster for m in modules if m.domain_cluster)
+            f.write(f"Domain clusters identified: {len(domain_clusters)}\n\n")
+            
+            # Domain distribution
+            if domain_clusters:
+                f.write("DOMAIN DISTRIBUTION\n")
+                f.write("-" * 80 + "\n")
+                
+                domain_counts = {}
+                for module in modules:
+                    if module.domain_cluster:
+                        domain_counts[module.domain_cluster] = domain_counts.get(module.domain_cluster, 0) + 1
+                
+                for domain, count in sorted(domain_counts.items(), key=lambda x: x[1], reverse=True):
+                    f.write(f"{domain}: {count} modules\n")
+                f.write("\n")
+            
+            # Day-One Questions
+            f.write("DAY-ONE QUESTIONS\n")
+            f.write("-" * 80 + "\n\n")
+            
+            for key, answer_data in day_one_answers.items():
+                question = answer_data.get('question', key)
+                answer = answer_data.get('answer', 'No answer available')
+                
+                f.write(f"Q: {question}\n")
+                f.write(f"A: {answer}\n\n")
+            
+            # Token usage
+            if hasattr(self.semanticist, 'budget_tracker'):
+                usage_summary = self.semanticist.budget_tracker.get_usage_summary()
+                
+                f.write("TOKEN USAGE\n")
+                f.write("-" * 80 + "\n")
+                
+                if 'total' in usage_summary:
+                    total = usage_summary['total']
+                    f.write(f"Total tokens: {total.get('total_tokens', 0):,}\n")
+                    f.write(f"Input tokens: {total.get('input_tokens', 0):,}\n")
+                    f.write(f"Output tokens: {total.get('output_tokens', 0):,}\n")
+                    f.write(f"Estimated cost: ${total.get('cost_usd', 0):.4f}\n\n")
+            
+            f.write("=" * 80 + "\n")
+            f.write("END OF REPORT\n")
+            f.write("=" * 80 + "\n")
+
     
     def _save_hydrologist_report(self, output_dir: Path, datasets, transformations, lineage_graph) -> None:
         """Save Hydrologist analysis report."""
