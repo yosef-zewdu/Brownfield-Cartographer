@@ -51,6 +51,57 @@ class DayOneQuestionAnswerer:
                 "Day-One answers will use heuristics only"
             )
     
+    def _extract_export_line_range(
+        self,
+        module_path: str,
+        export_name: str
+    ) -> Optional[Tuple[int, int]]:
+        """
+        Extract line range for a specific export in a module.
+        
+        Args:
+            module_path: Path to the module file
+            export_name: Name of the export to find
+        
+        Returns:
+            Tuple of (start_line, end_line) or None if not found
+        """
+        try:
+            with open(module_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            # Search for export definition
+            for i, line in enumerate(lines):
+                # Match various export patterns
+                patterns = [
+                    rf'\bdef\s+{re.escape(export_name)}\s*\(',  # Python function
+                    rf'\bclass\s+{re.escape(export_name)}\b',   # Python class
+                    rf'\bconst\s+{re.escape(export_name)}\s*=', # JS/TS const
+                    rf'\bfunction\s+{re.escape(export_name)}\s*\(', # JS function
+                    rf'\bexport\s+(?:const|function|class)\s+{re.escape(export_name)}\b', # ES6 export
+                ]
+                
+                for pattern in patterns:
+                    if re.search(pattern, line):
+                        start_line = i + 1  # 1-indexed
+                        
+                        # Estimate end line (next 20 lines or until next definition)
+                        end_line = start_line
+                        for j in range(i + 1, min(i + 21, len(lines))):
+                            # Stop at next top-level definition
+                            if re.match(r'^(def|class|function|const|export)\s+', lines[j]):
+                                break
+                            end_line = j + 1
+                        
+                        return (start_line, end_line)
+            
+            # If not found, return None
+            return None
+            
+        except Exception as e:
+            logger.debug(f"Failed to extract line range for {export_name} in {module_path}: {e}")
+            return None
+    
     def answer_ingestion_path(
         self,
         lineage_graph: nx.DiGraph,
@@ -158,7 +209,8 @@ class DayOneQuestionAnswerer:
         """
         Answer: What are the critical outputs?
         
-        Uses PageRank and sink analysis to identify critical outputs.
+        Uses sink analysis from lineage graph to identify critical outputs.
+        Falls back to PageRank on module graph only if lineage graph has no edges.
         Provides file and line citations with provenance tracking.
         
         Args:
@@ -183,25 +235,10 @@ class DayOneQuestionAnswerer:
                 if node_data.get('node_type') == 'dataset':
                     sinks.append(node)
         
-        # Compute PageRank on module graph to find architectural hubs
-        pagerank_scores = {}
-        if len(module_graph.nodes) > 0:
-            try:
-                pagerank_scores = nx.pagerank(module_graph, weight='import_count')
-            except:
-                pagerank_scores = nx.pagerank(module_graph)
-        
-        # Get top 5 modules by PageRank
-        top_modules = sorted(
-            pagerank_scores.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )[:5]
-        
         # Collect evidence
         evidence = []
         
-        # Evidence from sink datasets
+        # Evidence from sink datasets (PRIMARY source for data pipelines)
         for sink_name in sinks:
             dataset = next((ds for ds in datasets if ds.name == sink_name), None)
             if dataset:
@@ -215,20 +252,45 @@ class DayOneQuestionAnswerer:
                     'evidence_type': dataset.provenance.evidence_type if dataset.provenance else 'heuristic'
                 })
         
-        # Evidence from high PageRank modules
-        for module_path, pagerank_score in top_modules:
-            module = next((m for m in modules if m.path == module_path), None)
-            if module:
-                evidence.append({
-                    'type': 'critical_module',
-                    'path': module_path,
-                    'pagerank': pagerank_score,
-                    'file': module_path,
-                    'line_range': None,
-                    'exports': module.exports[:5],  # Top 5 exports
-                    'confidence': 0.9,  # High confidence from PageRank
-                    'evidence_type': 'heuristic'
-                })
+        # Only use module graph PageRank if lineage graph has no edges
+        # (module graph may not have dbt ref() dependencies extracted)
+        if len(evidence) == 0 and len(module_graph.edges) > 0:
+            logger.info("No lineage sinks found, falling back to module graph PageRank")
+            pagerank_scores = {}
+            try:
+                pagerank_scores = nx.pagerank(module_graph, weight='import_count')
+            except:
+                pagerank_scores = nx.pagerank(module_graph)
+            
+            # Get top 5 modules by PageRank
+            top_modules = sorted(
+                pagerank_scores.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )[:5]
+            
+            # Evidence from high PageRank modules
+            for module_path, pagerank_score in top_modules:
+                module = next((m for m in modules if m.path == module_path), None)
+                if module:
+                    # Extract line range (first 50 lines as heuristic for critical config files)
+                    try:
+                        with open(module_path, 'r', encoding='utf-8') as f:
+                            total_lines = len(f.readlines())
+                        line_range = (1, min(50, total_lines))
+                    except Exception:
+                        line_range = (1, 50)
+                    
+                    evidence.append({
+                        'type': 'critical_module',
+                        'path': module_path,
+                        'pagerank': pagerank_score,
+                        'file': module_path,
+                        'line_range': line_range,
+                        'exports': module.exports[:5],  # Top 5 exports
+                        'confidence': 0.9,  # High confidence from PageRank
+                        'evidence_type': 'heuristic'
+                    })
         
         # Synthesize answer with LLM
         answer = self.synthesize_with_llm(
@@ -236,14 +298,14 @@ class DayOneQuestionAnswerer:
             evidence=evidence,
             context={
                 'num_sinks': len(sinks),
-                'num_critical_modules': len(top_modules)
+                'num_critical_modules': len([e for e in evidence if e['type'] == 'critical_module'])
             }
         )
         
         # Create provenance for this answer
         provenance = ProvenanceMetadata(
-            evidence_type="heuristic",  # PageRank and graph analysis
-            source_file="module_graph,lineage_graph",
+            evidence_type="heuristic",  # Graph analysis
+            source_file="lineage_graph" if sinks else "module_graph",
             confidence=0.85 if evidence else 0.3,
             resolution_status="resolved" if evidence else "inferred"
         )
@@ -263,7 +325,8 @@ class DayOneQuestionAnswerer:
         """
         Answer: What happens if X breaks?
         
-        Uses dependency graph to compute blast radius for a given node.
+        Uses lineage graph to compute blast radius for data dependencies.
+        Falls back to module graph only if lineage graph has no edges.
         Provides file and line citations with provenance tracking.
         
         Args:
@@ -281,43 +344,70 @@ class DayOneQuestionAnswerer:
         
         evidence = []
         
-        # If no target specified, analyze top PageRank modules
+        # If no target specified, analyze top nodes from lineage graph
         if target_node is None:
-            pagerank_scores = {}
-            if len(module_graph.nodes) > 0:
+            # Prefer lineage graph for data pipeline analysis
+            if len(lineage_graph.edges) > 0:
+                logger.info("Using lineage graph for blast radius analysis")
+                # Find source nodes (in-degree zero) as critical starting points
+                source_nodes = [
+                    node for node in lineage_graph.nodes()
+                    if lineage_graph.in_degree(node) == 0
+                ][:3]  # Top 3 sources
+                
+                # Compute blast radius for each source
+                for node in source_nodes:
+                    try:
+                        descendants = nx.descendants(lineage_graph, node)
+                        evidence.append({
+                            'type': 'lineage_blast_radius',
+                            'node': node,
+                            'affected_count': len(descendants),
+                            'affected_list': list(descendants)[:10],  # Top 10 affected
+                            'file': node,
+                            'confidence': 0.95,
+                            'evidence_type': 'heuristic'
+                        })
+                    except nx.NetworkXError as e:
+                        logger.warning(f"Failed to compute descendants for {node}: {e}")
+            
+            # Fall back to module graph if lineage graph has no edges
+            elif len(module_graph.edges) > 0:
+                logger.info("Lineage graph has no edges, falling back to module graph PageRank")
+                pagerank_scores = {}
                 try:
                     pagerank_scores = nx.pagerank(module_graph, weight='import_count')
                 except:
                     pagerank_scores = nx.pagerank(module_graph)
-            
-            # Get top 3 modules by PageRank
-            top_modules = sorted(
-                pagerank_scores.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:3]
-            
-            # Compute blast radius for each
-            for module_path, pagerank_score in top_modules:
-                if module_graph.has_node(module_path):
-                    try:
-                        descendants = nx.descendants(module_graph, module_path)
-                        evidence.append({
-                            'type': 'module_blast_radius',
-                            'node': module_path,
-                            'pagerank': pagerank_score,
-                            'affected_modules': len(descendants),
-                            'affected_list': list(descendants)[:10],  # Top 10 affected
-                            'file': module_path,
-                            'confidence': 0.9,
-                            'evidence_type': 'heuristic'
-                        })
-                    except nx.NetworkXError as e:
-                        logger.warning(f"Failed to compute descendants for {module_path}: {e}")
+                
+                # Get top 3 modules by PageRank
+                top_modules = sorted(
+                    pagerank_scores.items(),
+                    key=lambda x: x[1],
+                    reverse=True
+                )[:3]
+                
+                # Compute blast radius for each
+                for module_path, pagerank_score in top_modules:
+                    if module_graph.has_node(module_path):
+                        try:
+                            descendants = nx.descendants(module_graph, module_path)
+                            evidence.append({
+                                'type': 'module_blast_radius',
+                                'node': module_path,
+                                'pagerank': pagerank_score,
+                                'affected_modules': len(descendants),
+                                'affected_list': list(descendants)[:10],  # Top 10 affected
+                                'file': module_path,
+                                'confidence': 0.9,
+                                'evidence_type': 'heuristic'
+                            })
+                        except nx.NetworkXError as e:
+                            logger.warning(f"Failed to compute descendants for {module_path}: {e}")
         else:
             # Analyze specific target node
-            # Check both graphs
-            for graph, graph_name in [(module_graph, 'module'), (lineage_graph, 'lineage')]:
+            # Prefer lineage graph, fall back to module graph
+            for graph, graph_name in [(lineage_graph, 'lineage'), (module_graph, 'module')]:
                 if graph.has_node(target_node):
                     try:
                         descendants = nx.descendants(graph, target_node)
@@ -346,7 +436,7 @@ class DayOneQuestionAnswerer:
         # Create provenance for this answer
         provenance = ProvenanceMetadata(
             evidence_type="heuristic",  # Graph traversal
-            source_file="module_graph,lineage_graph",
+            source_file="lineage_graph" if len(lineage_graph.edges) > 0 else "module_graph",
             confidence=0.9 if evidence else 0.3,
             resolution_status="resolved" if evidence else "inferred"
         )
@@ -398,13 +488,16 @@ class DayOneQuestionAnswerer:
             # Search in purpose statements
             for module in modules:
                 if module.purpose_statement and query_lower in module.purpose_statement.lower():
+                    # Try to extract line range from module (first 20 lines as heuristic)
+                    line_range = (1, 20)
+                    
                     evidence.append({
                         'type': 'matching_module',
                         'path': module.path,
                         'purpose': module.purpose_statement,
                         'domain_cluster': module.domain_cluster,
                         'file': module.path,
-                        'line_range': None,
+                        'line_range': line_range,
                         'confidence': 0.8,
                         'evidence_type': 'llm'  # Purpose statements are LLM-generated
                     })
@@ -413,13 +506,16 @@ class DayOneQuestionAnswerer:
             for module in modules:
                 for export in module.exports:
                     if query_lower in export.lower():
+                        # Extract actual line range for this export
+                        line_range = self._extract_export_line_range(module.path, export)
+                        
                         evidence.append({
                             'type': 'matching_export',
                             'path': module.path,
                             'export': export,
                             'domain_cluster': module.domain_cluster,
                             'file': module.path,
-                            'line_range': None,
+                            'line_range': line_range,
                             'confidence': 0.7,
                             'evidence_type': 'tree_sitter'
                         })
@@ -500,40 +596,48 @@ class DayOneQuestionAnswerer:
         # Filter modules with velocity data
         modules_with_velocity = [
             m for m in modules
-            if m.change_velocity_30d is not None and m.change_velocity_30d > 0
+            if m.change_velocity is not None and m.change_velocity > 0
         ]
         
         # Sort by velocity
         high_velocity_modules = sorted(
             modules_with_velocity,
-            key=lambda m: m.change_velocity_30d,
+            key=lambda m: m.change_velocity,
             reverse=True
         )[:top_n]
         
         # Collect evidence
         evidence = []
         for module in high_velocity_modules:
+            # Extract line range (first 30 lines as heuristic for frequently changed files)
+            try:
+                with open(module.path, 'r', encoding='utf-8') as f:
+                    total_lines = len(f.readlines())
+                line_range = (1, min(30, total_lines))
+            except Exception:
+                line_range = (1, 30)
+            
             evidence.append({
                 'type': 'high_velocity_module',
                 'path': module.path,
-                'change_velocity': module.change_velocity_30d,
+                'change_velocity': module.change_velocity,
                 'purpose': module.purpose_statement,
                 'domain_cluster': module.domain_cluster,
                 'file': module.path,
-                'line_range': None,
+                'line_range': line_range,
                 'confidence': 1.0,  # Git data is highly reliable
                 'evidence_type': 'heuristic'  # Git log analysis
             })
         
         # Compute Pareto analysis (80/20 rule)
         if modules_with_velocity:
-            total_changes = sum(m.change_velocity_30d for m in modules_with_velocity)
+            total_changes = sum(m.change_velocity for m in modules_with_velocity)
             cumulative_changes = 0
             pareto_threshold = 0.8 * total_changes
             pareto_files = []
             
             for module in high_velocity_modules:
-                cumulative_changes += module.change_velocity_30d
+                cumulative_changes += module.change_velocity
                 pareto_files.append(module.path)
                 if cumulative_changes >= pareto_threshold:
                     break

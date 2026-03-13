@@ -30,7 +30,7 @@ def sample_modules(sample_provenance):
             purpose_statement="Loads data from CSV files and databases",
             domain_cluster="Data Processing",
             complexity_score=50,
-            change_velocity_30d=15,
+            change_velocity=15,
             exports=["load_csv", "load_db"],
             provenance=sample_provenance
         ),
@@ -40,7 +40,7 @@ def sample_modules(sample_provenance):
             purpose_statement="Handles API requests and responses",
             domain_cluster="API Integration",
             complexity_score=80,
-            change_velocity_30d=25,
+            change_velocity=25,
             exports=["handle_request", "send_response"],
             provenance=sample_provenance
         ),
