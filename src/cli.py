@@ -56,6 +56,12 @@ Examples:
         action='store_true',
         help='Skip Hydrologist phase (only run Surveyor)'
     )
+    analyze_parser.add_argument(
+        '--semanticist-max-modules',
+        type=int,
+        default=None,
+        help='Maximum modules for Semanticist analysis (default: all, recommended: 100 for large codebases)'
+    )
     
     # Parse arguments
     args = parser.parse_args()
@@ -101,7 +107,8 @@ def analyze_command(args):
         module_graph, lineage_graph = orchestrator.analyze_repository(
             str(repo_path),
             skip_surveyor=args.skip_surveyor,
-            skip_hydrologist=args.skip_hydrologist
+            skip_hydrologist=args.skip_hydrologist,
+            semanticist_max_modules=getattr(args, 'semanticist_max_modules', None)
         )
         
         # Check for errors

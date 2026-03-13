@@ -100,8 +100,12 @@ class SQLLineageAnalyzer:
                 ))
                 
             except Exception as e:
-                # Log unparseable SQL with confidence=0.0
-                self.logger.warning(f"Failed to parse SQL statement in {source_file}: {e}")
+                # For dbt files with Jinja2 templates, this is expected - use debug level
+                # For other SQL files, use warning level
+                is_dbt_file = 'models/' in source_file or 'macros/' in source_file
+                log_level = self.logger.debug if is_dbt_file else self.logger.warning
+                log_level(f"Failed to parse SQL statement in {source_file}: {e}")
+                
                 line_start = self._get_statement_line_number(sql_content, statement, i)
                 line_end = line_start + statement.count('\n')
                 
