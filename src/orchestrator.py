@@ -8,6 +8,7 @@ from datetime import datetime
 from agents.surveyor import SurveyorAgent
 from agents.hydrologist import HydrologistAgent
 from agents.semanticist import SemanticistAgent
+from agents.trace_logger import CartographyTraceLogger
 from analyzers.graph_serializer import GraphSerializer
 
 
@@ -31,6 +32,7 @@ class CartographerOrchestrator:
         self.hydrologist = HydrologistAgent()
         self.semanticist = SemanticistAgent()
         self.errors = []
+        self.trace_logger = CartographyTraceLogger()
     
     def analyze_repository(
         self,
@@ -76,6 +78,18 @@ class CartographerOrchestrator:
         module_graph = None
         lineage_graph = None
         
+        # Reset trace logger for this run
+        self.trace_logger.clear()
+        self.trace_logger.log_action(
+            agent="surveyor",
+            action="pipeline_start",
+            evidence_source=str(repo_path),
+            evidence_type="heuristic",
+            confidence=1.0,
+            resolution_status="resolved",
+            details={"repo_path": str(repo_path), "output_dir": str(output_dir)}
+        )
+        
         # Phase 1: Surveyor Agent
         if not skip_surveyor:
             print("\n[PHASE 1] Running Surveyor Agent...")
@@ -89,6 +103,30 @@ class CartographerOrchestrator:
                 print(f"  - Graph nodes: {module_graph.number_of_nodes()}")
                 print(f"  - Graph edges: {module_graph.number_of_edges()}")
                 
+                self.trace_logger.log_action(
+                    agent="surveyor",
+                    action="analyze_repository:module_graph_built",
+                    evidence_source=str(repo_path),
+                    evidence_type="tree_sitter",
+                    confidence=1.0,
+                    resolution_status="resolved",
+                    details={
+                        "modules_analyzed": len(modules),
+                        "graph_nodes": module_graph.number_of_nodes(),
+                        "graph_edges": module_graph.number_of_edges(),
+                        "parse_errors": len(self.surveyor.errors)
+                    }
+                )
+                if self.surveyor.errors:
+                    for err in self.surveyor.errors:
+                        self.trace_logger.log_error(
+                            agent="surveyor",
+                            severity="warning",
+                            message=f"Failed to parse {err['file']}: {err['error']}",
+                            evidence_source=err['file'],
+                            evidence_type="tree_sitter"
+                        )
+                
                 # Serialize module graph
                 module_graph_path = output_dir / 'module_graph.json'
                 GraphSerializer.serialize_module_graph(module_graph, str(module_graph_path))
@@ -100,6 +138,10 @@ class CartographerOrchestrator:
             except Exception as e:
                 error_msg = f"Surveyor failed: {str(e)}"
                 self.errors.append(error_msg)
+                self.trace_logger.log_error(
+                    agent="surveyor", severity="error", message=error_msg,
+                    evidence_source=str(repo_path), evidence_type="tree_sitter"
+                )
                 print(f"✗ {error_msg}")
                 return None, None
         else:
@@ -117,6 +159,15 @@ class CartographerOrchestrator:
                 print(f"✓ Loaded existing module graph:")
                 print(f"  - Graph nodes: {module_graph.number_of_nodes()}")
                 print(f"  - Graph edges: {module_graph.number_of_edges()}")
+                self.trace_logger.log_action(
+                    agent="surveyor",
+                    action="load_existing_module_graph",
+                    evidence_source=str(module_graph_path),
+                    evidence_type="heuristic",
+                    confidence=1.0,
+                    resolution_status="resolved",
+                    details={"nodes": module_graph.number_of_nodes(), "edges": module_graph.number_of_edges()}
+                )
             except Exception as e:
                 error_msg = f"Failed to load module graph: {str(e)}"
                 self.errors.append(error_msg)
@@ -140,6 +191,31 @@ class CartographerOrchestrator:
                 print(f"  - Lineage graph nodes: {lineage_graph.number_of_nodes()}")
                 print(f"  - Lineage graph edges: {lineage_graph.number_of_edges()}")
                 
+                self.trace_logger.log_action(
+                    agent="hydrologist",
+                    action="analyze_repository:lineage_graph_built",
+                    evidence_source=str(repo_path),
+                    evidence_type="sqlglot",
+                    confidence=0.9,
+                    resolution_status="resolved",
+                    details={
+                        "datasets": len(datasets),
+                        "transformations": len(transformations),
+                        "graph_nodes": lineage_graph.number_of_nodes(),
+                        "graph_edges": lineage_graph.number_of_edges(),
+                        "parse_errors": len(self.hydrologist.errors)
+                    }
+                )
+                if self.hydrologist.errors:
+                    for err in self.hydrologist.errors:
+                        self.trace_logger.log_error(
+                            agent="hydrologist",
+                            severity="warning",
+                            message=f"Analysis error in {err.get('file', err.get('component', 'unknown'))}: {err['error']}",
+                            evidence_source=err.get('file', err.get('component')),
+                            evidence_type="sqlglot"
+                        )
+                
                 # Serialize lineage graph
                 lineage_graph_path = output_dir / 'lineage_graph.json'
                 self.hydrologist.serialize_lineage_graph(lineage_graph, str(lineage_graph_path))
@@ -151,6 +227,10 @@ class CartographerOrchestrator:
             except Exception as e:
                 error_msg = f"Hydrologist failed: {str(e)}"
                 self.errors.append(error_msg)
+                self.trace_logger.log_error(
+                    agent="hydrologist", severity="error", message=error_msg,
+                    evidence_source=str(repo_path), evidence_type="sqlglot"
+                )
                 print(f"✗ {error_msg}")
         else:
             print("\n[PHASE 2] Skipping Hydrologist")
@@ -264,6 +344,21 @@ class CartographerOrchestrator:
                 print(f"  - Domain clusters created: {len(set(m.domain_cluster for m in enriched_modules if m.domain_cluster))}")
                 print(f"  - Day-One questions answered: {len(day_one_answers)}")
                 
+                self.trace_logger.log_action(
+                    agent="semanticist",
+                    action="analyze_repository:semantic_enrichment_complete",
+                    evidence_source="module_graph + llm",
+                    evidence_type="llm",
+                    confidence=0.8,
+                    resolution_status="inferred",
+                    details={
+                        "modules_with_purpose": sum(1 for m in enriched_modules if m.purpose_statement),
+                        "modules_with_drift": sum(1 for m in enriched_modules if m.has_documentation_drift),
+                        "domain_clusters": len(set(m.domain_cluster for m in enriched_modules if m.domain_cluster)),
+                        "day_one_questions_answered": len(day_one_answers)
+                    }
+                )
+                
                 # Update module graph with enriched data
                 for module in enriched_modules:
                     if module_graph.has_node(module.path):
@@ -303,6 +398,10 @@ class CartographerOrchestrator:
             except Exception as e:
                 error_msg = f"Semanticist failed: {str(e)}"
                 self.errors.append(error_msg)
+                self.trace_logger.log_error(
+                    agent="semanticist", severity="error", message=error_msg,
+                    evidence_source=str(repo_path), evidence_type="llm"
+                )
                 print(f"✗ {error_msg}")
                 import traceback
                 traceback.print_exc()
@@ -326,6 +425,12 @@ class CartographerOrchestrator:
         
         print(f"\nOutput artifacts saved to: {output_dir}")
         print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Flush trace log
+        trace_path = output_dir / 'cartography_trace.jsonl'
+        self.trace_logger.flush(output_path=trace_path)
+        stats = self.trace_logger.get_statistics()
+        print(f"\nTrace log: {trace_path} ({stats['total_entries']} entries)")
         
         return module_graph, lineage_graph
     
