@@ -6,6 +6,7 @@ from .purpose_generator import PurposeStatementGenerator
 from .drift_detector import DocumentationDriftDetector
 from .domain_clusterer import DomainClusterer
 from .day_one_answerer import DayOneQuestionAnswerer
+from .trace_logger import CartographyTraceLogger
 
 __all__ = [
     'SurveyorAgent',
@@ -14,4 +15,5 @@ __all__ = [
     'DocumentationDriftDetector',
     'DomainClusterer',
     'DayOneQuestionAnswerer',
+    'CartographyTraceLogger',
 ]
