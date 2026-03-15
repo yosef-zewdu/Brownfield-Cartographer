@@ -492,7 +492,20 @@ class CartographerOrchestrator:
                     pagerank_scores={},
                     circular_dependencies=[],
                     day_one_answers=day_one_answers,
-                    analysis_metadata={"repo_path": str(repo_path)},
+                    analysis_metadata={
+                        "repo_path": str(repo_path),
+                        "repository_path": str(repo_path),
+                        "timestamp": datetime.now(),
+                        "total_modules": len(enriched_modules),
+                        "total_datasets": sum(
+                            1 for _, d in (lineage_graph or nx.DiGraph()).nodes(data=True)
+                            if d.get("node_type") == "dataset"
+                        ),
+                        "total_transformations": sum(
+                            1 for _, d in (lineage_graph or nx.DiGraph()).nodes(data=True)
+                            if d.get("node_type") == "transformation"
+                        ),
+                    },
                     trace_logger=self.trace_logger,
                 )
                 print("✓ Archivist complete: CODEBASE.md, onboarding_brief.md, graphs serialized")
@@ -554,17 +567,24 @@ class CartographerOrchestrator:
 
     def run_archivist(self, output_dir, modules, day_one_answers, module_graph, lineage_graph):
         """Run Archivist agent to generate living documentation artifacts."""
+        lg = lineage_graph or nx.DiGraph()
         archivist = ArchivistAgent(output_dir=output_dir)
         return archivist.generate_artifacts(
             modules=modules,
             datasets=[],
             transformations=[],
             module_graph=module_graph,
-            lineage_graph=lineage_graph or nx.DiGraph(),
+            lineage_graph=lg,
             pagerank_scores={},
             circular_dependencies=[],
             day_one_answers=day_one_answers,
-            analysis_metadata={},
+            analysis_metadata={
+                "repository_path": str(output_dir),
+                "timestamp": datetime.now(),
+                "total_modules": len(modules),
+                "total_datasets": sum(1 for _, d in lg.nodes(data=True) if d.get("node_type") == "dataset"),
+                "total_transformations": sum(1 for _, d in lg.nodes(data=True) if d.get("node_type") == "transformation"),
+            },
             trace_logger=self.trace_logger,
         )
 

@@ -215,62 +215,51 @@ class CODEBASEGenerator:
         lineage_graph: nx.DiGraph,
         datasets: List[DatasetNode]
     ) -> str:
-        """
-        Write Data Sources & Sinks section.
-        
-        Args:
-            lineage_graph: Data lineage graph
-            datasets: List of all dataset nodes
-        
-        Returns:
-            Data Sources & Sinks section as string
-        """
         section = "## Data Sources & Sinks\n\n"
         
-        # Find sources (in-degree = 0)
         sources = [node for node in lineage_graph.nodes() 
                   if lineage_graph.in_degree(node) == 0 
                   and lineage_graph.nodes[node].get('node_type') == 'dataset']
         
-        # Find sinks (out-degree = 0)
         sinks = [node for node in lineage_graph.nodes() 
                 if lineage_graph.out_degree(node) == 0 
                 and lineage_graph.nodes[node].get('node_type') == 'dataset']
         
-        # Create dataset lookup
         dataset_dict = {d.name: d for d in datasets}
         
-        # Write sources
+        def _source_ref(node_id: str) -> str:
+            """Return a file reference for a dataset node."""
+            # Try DatasetNode list first
+            dataset = dataset_dict.get(node_id)
+            if dataset and dataset.discovered_in:
+                return f" - `{dataset.discovered_in}`"
+            # Fall back to lineage graph node attributes
+            node_data = lineage_graph.nodes[node_id]
+            discovered = node_data.get('discovered_in') or node_data.get('source_file', '')
+            prov = node_data.get('provenance', {})
+            if isinstance(prov, dict):
+                discovered = discovered or prov.get('source_file', '')
+            if discovered:
+                return f" - `{discovered}`"
+            return ""
+
         section += f"### Data Sources ({len(sources)})\n\n"
         if sources:
-            for source in sorted(sources)[:10]:  # Limit to top 10
+            for source in sorted(sources)[:10]:
                 dataset = dataset_dict.get(source)
-                section += f"- **{source}**"
-                
-                if dataset:
-                    section += f" ({dataset.storage_type})"
-                    if dataset.discovered_in:
-                        section += f" - discovered in `{dataset.discovered_in}`"
-                
-                section += "\n"
+                storage = f" ({dataset.storage_type})" if dataset else ""
+                section += f"- **{source}**{storage}{_source_ref(source)}\n"
         else:
             section += "No data sources identified.\n"
         
         section += "\n"
         
-        # Write sinks
         section += f"### Data Sinks ({len(sinks)})\n\n"
         if sinks:
-            for sink in sorted(sinks)[:10]:  # Limit to top 10
+            for sink in sorted(sinks)[:10]:
                 dataset = dataset_dict.get(sink)
-                section += f"- **{sink}**"
-                
-                if dataset:
-                    section += f" ({dataset.storage_type})"
-                    if dataset.discovered_in:
-                        section += f" - discovered in `{dataset.discovered_in}`"
-                
-                section += "\n"
+                storage = f" ({dataset.storage_type})" if dataset else ""
+                section += f"- **{sink}**{storage}{_source_ref(sink)}\n"
         else:
             section += "No data sinks identified.\n"
         
