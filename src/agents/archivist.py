@@ -67,7 +67,7 @@ class CODEBASEGenerator:
         sections.append("")
         
         # Critical Path
-        sections.append(self.write_critical_path(pagerank_scores, modules))
+        sections.append(self.write_critical_path(pagerank_scores, modules, lineage_graph))
         sections.append("")
         
         # Data Sources & Sinks
@@ -152,40 +152,62 @@ class CODEBASEGenerator:
     def write_critical_path(
         self,
         pagerank_scores: Dict[str, float],
-        modules: List[ModuleNode]
+        modules: List[ModuleNode],
+        lineage_graph: nx.DiGraph = None,
     ) -> str:
         """
-        Write Critical Path section with top 5 modules by PageRank.
-        
-        Args:
-            pagerank_scores: PageRank scores for all modules
-            modules: List of all modules for metadata lookup
-        
-        Returns:
-            Critical Path section as string
+        Write Critical Path section.
+
+        Uses PageRank on the module graph when edges exist.
+        Falls back to lineage graph degree centrality (most-connected
+        transformation nodes) for dbt/SQL-only repos with no Python imports.
         """
         section = "## Critical Path\n\n"
-        section += "The following modules are architectural hubs (highest PageRank scores):\n\n"
-        
-        # Sort by PageRank score
-        sorted_modules = sorted(pagerank_scores.items(), key=lambda x: x[1], reverse=True)[:5]
-        
-        # Create module lookup
         module_dict = {m.path: m for m in modules}
-        
-        for rank, (module_path, score) in enumerate(sorted_modules, 1):
-            module = module_dict.get(module_path)
-            
-            section += f"{rank}. **{module_path}** (PageRank: {score:.4f})\n"
-            
-            if module and module.purpose_statement:
-                section += f"   - {module.purpose_statement}\n"
-            
-            if module and module.domain_cluster:
-                section += f"   - Domain: {module.domain_cluster}\n"
-            
-            section += "\n"
-        
+
+        # --- Primary: PageRank on module import graph ---
+        sorted_modules = sorted(pagerank_scores.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        if sorted_modules:
+            section += "The following modules are architectural hubs (highest PageRank scores):\n\n"
+            for rank, (module_path, score) in enumerate(sorted_modules, 1):
+                module = module_dict.get(module_path)
+                section += f"{rank}. **{module_path}** (PageRank: {score:.4f})\n"
+                if module and module.purpose_statement:
+                    section += f"   - {module.purpose_statement}\n"
+                if module and module.domain_cluster:
+                    section += f"   - Domain: {module.domain_cluster}\n"
+                section += "\n"
+            return section
+
+        # --- Fallback: lineage graph degree centrality ---
+        if lineage_graph and lineage_graph.number_of_edges() > 0:
+            section += "No module import edges detected (SQL/dbt-only repo). "
+            section += "Critical path derived from data lineage graph — "
+            section += "transformations with the most upstream + downstream connections:\n\n"
+
+            # Score each transformation by total degree (in + out)
+            transform_scores = {}
+            for node, data in lineage_graph.nodes(data=True):
+                if data.get("node_type") == "transformation":
+                    score = lineage_graph.in_degree(node) + lineage_graph.out_degree(node)
+                    transform_scores[node] = score
+
+            top = sorted(transform_scores.items(), key=lambda x: x[1], reverse=True)[:5]
+            for rank, (node_id, score) in enumerate(top, 1):
+                label = node_id.replace("dbt_model:", "")
+                data = lineage_graph.nodes[node_id]
+                src = data.get("source_file", "")
+                section += f"{rank}. **{label}** (connections: {score})\n"
+                if src:
+                    section += f"   - Source: `{src}`\n"
+                purpose = data.get("purpose_statement", "")
+                if purpose:
+                    section += f"   - {purpose[:180]}\n"
+                section += "\n"
+            return section
+
+        section += "_No module import graph or lineage graph available to compute critical path._\n\n"
         return section
     
     def write_data_sources_sinks(
@@ -707,24 +729,27 @@ class ArchivistAgent:
             )
         logger.info(f"module_graph.json written to {module_graph_path}")
         
-        # Serialize lineage graph
+        # Serialize lineage graph — only if it has data (skip if empty/placeholder)
         lineage_graph_path = self.output_dir / "lineage_graph.json"
-        self.graph_serializer.serialize_lineage_graph(
-            graph=lineage_graph,
-            output_path=str(lineage_graph_path)
-        )
-        graph_paths['lineage_graph'] = lineage_graph_path
-        if trace_logger:
-            trace_logger.log_action(
-                agent="archivist",
-                action="serialize_graph:lineage_graph.json",
-                evidence_source="hydrologist lineage_graph",
-                evidence_type="sqlglot",
-                confidence=1.0,
-                resolution_status="resolved",
-                details={"nodes": lineage_graph.number_of_nodes(), "edges": lineage_graph.number_of_edges()}
+        if lineage_graph.number_of_nodes() > 0:
+            self.graph_serializer.serialize_lineage_graph(
+                graph=lineage_graph,
+                output_path=str(lineage_graph_path)
             )
-        logger.info(f"lineage_graph.json written to {lineage_graph_path}")
+            graph_paths['lineage_graph'] = lineage_graph_path
+            if trace_logger:
+                trace_logger.log_action(
+                    agent="archivist",
+                    action="serialize_graph:lineage_graph.json",
+                    evidence_source="hydrologist lineage_graph",
+                    evidence_type="sqlglot",
+                    confidence=1.0,
+                    resolution_status="resolved",
+                    details={"nodes": lineage_graph.number_of_nodes(), "edges": lineage_graph.number_of_edges()}
+                )
+            logger.info(f"lineage_graph.json written to {lineage_graph_path}")
+        else:
+            logger.info("Skipping lineage_graph.json serialization — graph is empty")
         
         return graph_paths
     
