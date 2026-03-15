@@ -5,24 +5,307 @@
   "nodes": [
     {
       "node_type": "dataset",
-      "name": "customers",
+      "name": "ecom.raw_customers",
       "storage_type": "table",
       "schema_snapshot": null,
       "freshness_sla": null,
       "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/marts/customers.sql",
+      "is_source_of_truth": true,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
       "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/marts/customers.sql",
-        "line_range": [
-          1,
-          59
-        ],
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "ecom.raw_customers"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_orders",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": true,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "ecom.raw_orders"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_items",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": true,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "ecom.raw_items"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_stores",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": true,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "ecom.raw_stores"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_products",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": true,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "ecom.raw_products"
+    },
+    {
+      "node_type": "dataset",
+      "name": "ecom.raw_supplies",
+      "storage_type": "table",
+      "schema_snapshot": null,
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": true,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "ecom.raw_supplies"
+    },
+    {
+      "node_type": "dataset",
+      "name": "customers",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "customer_id": "unknown",
+        "customer_name": "unknown",
+        "count_lifetime_orders": "unknown",
+        "first_ordered_at": "unknown",
+        "last_ordered_at": "unknown",
+        "lifetime_spend_pretax": "unknown",
+        "lifetime_tax_paid": "unknown",
+        "lifetime_spend": "unknown",
+        "customer_type": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/marts/customers.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/marts/customers.yml",
+        "line_range": null,
         "confidence": 1.0,
         "resolution_status": "resolved"
       },
       "id": "customers"
+    },
+    {
+      "node_type": "dataset",
+      "name": "orders",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "order_id": "unknown",
+        "customer_id": "unknown",
+        "order_total": "unknown",
+        "ordered_at": "unknown",
+        "order_cost": "unknown",
+        "is_food_order": "unknown",
+        "is_drink_order": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/marts/orders.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/marts/orders.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "orders"
+    },
+    {
+      "node_type": "dataset",
+      "name": "order_items",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "order_item_id": "unknown",
+        "order_id": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/marts/order_items.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/marts/order_items.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "order_items"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_customers",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "customer_id": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_customers.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_customers.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_customers"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_locations",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "location_id": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_locations.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_locations.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_locations"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_products",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "product_id": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_products"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_order_items",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "order_item_id": "unknown",
+        "order_id": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_order_items.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_order_items.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_order_items"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_supplies",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "supply_uuid": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_supplies.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_supplies.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_supplies"
+    },
+    {
+      "node_type": "dataset",
+      "name": "stg_orders",
+      "storage_type": "table",
+      "schema_snapshot": {
+        "order_id": "unknown"
+      },
+      "freshness_sla": null,
+      "owner": null,
+      "is_source_of_truth": false,
+      "discovered_in": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_orders.yml",
+      "provenance": {
+        "evidence_type": "yaml_parse",
+        "source_file": "/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_orders.yml",
+        "line_range": null,
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "id": "stg_orders"
     },
     {
       "node_type": "dataset",
@@ -44,48 +327,6 @@
         "resolution_status": "resolved"
       },
       "id": "products"
-    },
-    {
-      "node_type": "dataset",
-      "name": "order_items",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/marts/order_items.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/marts/order_items.sql",
-        "line_range": [
-          1,
-          67
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "order_items"
-    },
-    {
-      "node_type": "dataset",
-      "name": "orders",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/marts/orders.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/marts/orders.sql",
-        "line_range": [
-          1,
-          78
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "orders"
     },
     {
       "node_type": "dataset",
@@ -149,240 +390,6 @@
         "resolution_status": "resolved"
       },
       "id": "supplies"
-    },
-    {
-      "node_type": "dataset",
-      "name": "stg_orders",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/staging/stg_orders.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_orders.sql",
-        "line_range": [
-          1,
-          34
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "stg_orders"
-    },
-    {
-      "node_type": "dataset",
-      "name": "stg_products",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/staging/stg_products.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_products.sql",
-        "line_range": [
-          1,
-          35
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "stg_products"
-    },
-    {
-      "node_type": "dataset",
-      "name": "stg_supplies",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/staging/stg_supplies.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_supplies.sql",
-        "line_range": [
-          1,
-          32
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "stg_supplies"
-    },
-    {
-      "node_type": "dataset",
-      "name": "stg_order_items",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/staging/stg_order_items.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_order_items.sql",
-        "line_range": [
-          1,
-          23
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "stg_order_items"
-    },
-    {
-      "node_type": "dataset",
-      "name": "stg_customers",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/staging/stg_customers.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_customers.sql",
-        "line_range": [
-          1,
-          24
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "stg_customers"
-    },
-    {
-      "node_type": "dataset",
-      "name": "stg_locations",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "models/staging/stg_locations.sql",
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_locations.sql",
-        "line_range": [
-          1,
-          30
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "id": "stg_locations"
-    },
-    {
-      "node_type": "dataset",
-      "name": "ecom.raw_items",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "inferred_from_transformations",
-      "provenance": {
-        "evidence_type": "heuristic",
-        "source_file": "inferred_from_transformations",
-        "line_range": null,
-        "confidence": 0.5,
-        "resolution_status": "inferred"
-      },
-      "id": "ecom.raw_items"
-    },
-    {
-      "node_type": "dataset",
-      "name": "ecom.raw_stores",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "inferred_from_transformations",
-      "provenance": {
-        "evidence_type": "heuristic",
-        "source_file": "inferred_from_transformations",
-        "line_range": null,
-        "confidence": 0.5,
-        "resolution_status": "inferred"
-      },
-      "id": "ecom.raw_stores"
-    },
-    {
-      "node_type": "dataset",
-      "name": "ecom.raw_supplies",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "inferred_from_transformations",
-      "provenance": {
-        "evidence_type": "heuristic",
-        "source_file": "inferred_from_transformations",
-        "line_range": null,
-        "confidence": 0.5,
-        "resolution_status": "inferred"
-      },
-      "id": "ecom.raw_supplies"
-    },
-    {
-      "node_type": "dataset",
-      "name": "ecom.raw_products",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "inferred_from_transformations",
-      "provenance": {
-        "evidence_type": "heuristic",
-        "source_file": "inferred_from_transformations",
-        "line_range": null,
-        "confidence": 0.5,
-        "resolution_status": "inferred"
-      },
-      "id": "ecom.raw_products"
-    },
-    {
-      "node_type": "dataset",
-      "name": "ecom.raw_orders",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "inferred_from_transformations",
-      "provenance": {
-        "evidence_type": "heuristic",
-        "source_file": "inferred_from_transformations",
-        "line_range": null,
-        "confidence": 0.5,
-        "resolution_status": "inferred"
-      },
-      "id": "ecom.raw_orders"
-    },
-    {
-      "node_type": "dataset",
-      "name": "ecom.raw_customers",
-      "storage_type": "table",
-      "schema_snapshot": null,
-      "freshness_sla": null,
-      "owner": null,
-      "is_source_of_truth": false,
-      "discovered_in": "inferred_from_transformations",
-      "provenance": {
-        "evidence_type": "heuristic",
-        "source_file": "inferred_from_transformations",
-        "line_range": null,
-        "confidence": 0.5,
-        "resolution_status": "inferred"
-      },
-      "id": "ecom.raw_customers"
     },
     {
       "node_type": "transformation",
@@ -791,6 +798,118 @@
       "confidence": 1.0,
       "provenance": {
         "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_customers.sql",
+        "line_range": [
+          1,
+          24
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "ecom.raw_customers",
+      "target": "dbt_model:stg_customers"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_orders.sql",
+        "line_range": [
+          1,
+          34
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "ecom.raw_orders",
+      "target": "dbt_model:stg_orders"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_order_items.sql",
+        "line_range": [
+          1,
+          23
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "ecom.raw_items",
+      "target": "dbt_model:stg_order_items"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_locations.sql",
+        "line_range": [
+          1,
+          30
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "ecom.raw_stores",
+      "target": "dbt_model:stg_locations"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_products.sql",
+        "line_range": [
+          1,
+          35
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "ecom.raw_products",
+      "target": "dbt_model:stg_products"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/staging/stg_supplies.sql",
+        "line_range": [
+          1,
+          32
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "ecom.raw_supplies",
+      "target": "dbt_model:stg_supplies"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/customers.sql",
+        "line_range": [
+          1,
+          59
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "orders",
+      "target": "dbt_model:customers"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
         "source_file": "models/marts/orders.sql",
         "line_range": [
           1,
@@ -815,7 +934,7 @@
         "confidence": 1.0,
         "resolution_status": "resolved"
       },
-      "source": "orders",
+      "source": "stg_customers",
       "target": "dbt_model:customers"
     },
     {
@@ -823,32 +942,16 @@
       "confidence": 1.0,
       "provenance": {
         "evidence_type": "sqlglot",
-        "source_file": "models/marts/order_items.sql",
+        "source_file": "models/marts/locations.sql",
         "line_range": [
           1,
-          67
+          10
         ],
         "confidence": 1.0,
         "resolution_status": "resolved"
       },
-      "source": "stg_orders",
-      "target": "dbt_model:order_items"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/marts/orders.sql",
-        "line_range": [
-          1,
-          78
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "stg_orders",
-      "target": "dbt_model:orders"
+      "source": "stg_locations",
+      "target": "dbt_model:locations"
     },
     {
       "edge_type": "consumes",
@@ -880,6 +983,22 @@
         "resolution_status": "resolved"
       },
       "source": "stg_products",
+      "target": "dbt_model:order_items"
+    },
+    {
+      "edge_type": "consumes",
+      "confidence": 1.0,
+      "provenance": {
+        "evidence_type": "sqlglot",
+        "source_file": "models/marts/order_items.sql",
+        "line_range": [
+          1,
+          67
+        ],
+        "confidence": 1.0,
+        "resolution_status": "resolved"
+      },
+      "source": "stg_order_items",
       "target": "dbt_model:order_items"
     },
     {
@@ -927,7 +1046,7 @@
         "confidence": 1.0,
         "resolution_status": "resolved"
       },
-      "source": "stg_order_items",
+      "source": "stg_orders",
       "target": "dbt_model:order_items"
     },
     {
@@ -935,128 +1054,16 @@
       "confidence": 1.0,
       "provenance": {
         "evidence_type": "sqlglot",
-        "source_file": "models/marts/customers.sql",
+        "source_file": "models/marts/orders.sql",
         "line_range": [
           1,
-          59
+          78
         ],
         "confidence": 1.0,
         "resolution_status": "resolved"
       },
-      "source": "stg_customers",
-      "target": "dbt_model:customers"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/marts/locations.sql",
-        "line_range": [
-          1,
-          10
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "stg_locations",
-      "target": "dbt_model:locations"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_order_items.sql",
-        "line_range": [
-          1,
-          23
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "ecom.raw_items",
-      "target": "dbt_model:stg_order_items"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_locations.sql",
-        "line_range": [
-          1,
-          30
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "ecom.raw_stores",
-      "target": "dbt_model:stg_locations"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_supplies.sql",
-        "line_range": [
-          1,
-          32
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "ecom.raw_supplies",
-      "target": "dbt_model:stg_supplies"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_products.sql",
-        "line_range": [
-          1,
-          35
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "ecom.raw_products",
-      "target": "dbt_model:stg_products"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_orders.sql",
-        "line_range": [
-          1,
-          34
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "ecom.raw_orders",
-      "target": "dbt_model:stg_orders"
-    },
-    {
-      "edge_type": "consumes",
-      "confidence": 1.0,
-      "provenance": {
-        "evidence_type": "sqlglot",
-        "source_file": "models/staging/stg_customers.sql",
-        "line_range": [
-          1,
-          24
-        ],
-        "confidence": 1.0,
-        "resolution_status": "resolved"
-      },
-      "source": "ecom.raw_customers",
-      "target": "dbt_model:stg_customers"
+      "source": "stg_orders",
+      "target": "dbt_model:orders"
     },
     {
       "edge_type": "produces",

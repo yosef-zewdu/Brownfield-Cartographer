@@ -1,0 +1,182 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 860px;
+                 background-color: #1E1E2E;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": {"background": "#4CAF50", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "ecom.raw_customers", "label": "ecom.raw_customers", "shape": "ellipse", "size": 18, "title": "\u25c6 ecom.raw_customers\nType : Raw source table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml"}, {"color": {"background": "#4CAF50", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "ecom.raw_orders", "label": "ecom.raw_orders", "shape": "ellipse", "size": 18, "title": "\u25c6 ecom.raw_orders\nType : Raw source table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml"}, {"color": {"background": "#4CAF50", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "ecom.raw_items", "label": "ecom.raw_items", "shape": "ellipse", "size": 18, "title": "\u25c6 ecom.raw_items\nType : Raw source table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml"}, {"color": {"background": "#4CAF50", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "ecom.raw_stores", "label": "ecom.raw_stores", "shape": "ellipse", "size": 18, "title": "\u25c6 ecom.raw_stores\nType : Raw source table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml"}, {"color": {"background": "#4CAF50", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "ecom.raw_products", "label": "ecom.raw_products", "shape": "ellipse", "size": 18, "title": "\u25c6 ecom.raw_products\nType : Raw source table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml"}, {"color": {"background": "#4CAF50", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "ecom.raw_supplies", "label": "ecom.raw_supplies", "shape": "ellipse", "size": 18, "title": "\u25c6 ecom.raw_supplies\nType : Raw source table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "customers", "label": "customers", "shape": "ellipse", "size": 28, "title": "\u25c6 customers\nType : Mart / output table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/marts/customers.yml"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "orders", "label": "orders", "shape": "ellipse", "size": 28, "title": "\u25c6 orders\nType : Mart / output table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/marts/orders.yml"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "order_items", "label": "order_items", "shape": "ellipse", "size": 28, "title": "\u25c6 order_items\nType : Mart / output table\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/marts/order_items.yml"}, {"color": {"background": "#2196F3", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "stg_customers", "label": "stg_customers", "shape": "ellipse", "size": 22, "title": "\u25c6 stg_customers\nType : Staging dataset\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_customers.yml"}, {"color": {"background": "#2196F3", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "stg_locations", "label": "stg_locations", "shape": "ellipse", "size": 22, "title": "\u25c6 stg_locations\nType : Staging dataset\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_locations.yml"}, {"color": {"background": "#2196F3", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "stg_products", "label": "stg_products", "shape": "ellipse", "size": 22, "title": "\u25c6 stg_products\nType : Staging dataset\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.yml"}, {"color": {"background": "#2196F3", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "stg_order_items", "label": "stg_order_items", "shape": "ellipse", "size": 22, "title": "\u25c6 stg_order_items\nType : Staging dataset\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_order_items.yml"}, {"color": {"background": "#2196F3", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "stg_supplies", "label": "stg_supplies", "shape": "ellipse", "size": 22, "title": "\u25c6 stg_supplies\nType : Staging dataset\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_supplies.yml"}, {"color": {"background": "#2196F3", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "stg_orders", "label": "stg_orders", "shape": "ellipse", "size": 22, "title": "\u25c6 stg_orders\nType : Staging dataset\nKind : dataset\n\nEvidence   : yaml_parse\nConfidence : 1.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_orders.yml"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "products", "label": "products", "shape": "ellipse", "size": 28, "title": "\u25c6 products\nType : Mart / output table\nKind : dataset\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/products.sql:1-10"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "metricflow_time_spine", "label": "metricflow_time_spine", "shape": "ellipse", "size": 28, "title": "\u25c6 metricflow_time_spine\nType : Mart / output table\nKind : dataset\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/metricflow_time_spine.sql:1-20"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "locations", "label": "locations", "shape": "ellipse", "size": 28, "title": "\u25c6 locations\nType : Mart / output table\nKind : dataset\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/locations.sql:1-10"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "supplies", "label": "supplies", "shape": "ellipse", "size": 28, "title": "\u25c6 supplies\nType : Mart / output table\nKind : dataset\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/supplies.sql:1-10"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:customers", "label": "dbt_model:customers", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:customers\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/customers.sql:1-59"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:products", "label": "dbt_model:products", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:products\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/products.sql:1-10"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:order_items", "label": "dbt_model:order_items", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:order_items\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/order_items.sql:1-67"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:orders", "label": "dbt_model:orders", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:orders\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/orders.sql:1-78"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:metricflow_time_spine", "label": "dbt_model:metricflow_time_spine", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:metricflow_time_spine\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/metricflow_time_spine.sql:1-20"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:locations", "label": "dbt_model:locations", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:locations\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/locations.sql:1-10"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:supplies", "label": "dbt_model:supplies", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:supplies\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/marts/supplies.sql:1-10"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:stg_orders", "label": "dbt_model:stg_orders", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:stg_orders\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/staging/stg_orders.sql:1-34"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:stg_products", "label": "dbt_model:stg_products", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:stg_products\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/staging/stg_products.sql:1-35"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:stg_supplies", "label": "dbt_model:stg_supplies", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:stg_supplies\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/staging/stg_supplies.sql:1-32"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:stg_order_items", "label": "dbt_model:stg_order_items", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:stg_order_items\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/staging/stg_order_items.sql:1-23"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:stg_customers", "label": "dbt_model:stg_customers", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:stg_customers\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/staging/stg_customers.sql:1-24"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "dbt_model:stg_locations", "label": "dbt_model:stg_locations", "shape": "ellipse", "size": 28, "title": "\u25c6 dbt_model:stg_locations\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 1.00\nFile       : models/staging/stg_locations.sql:1-30"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "/home/yosef/Desktop/intensive/jaffle-shop/macros/generate_schema_name.sql:23:unparseable_sql_0", "label": "macros/generate_schema_name.sql:23:unparseable_sql_0", "shape": "ellipse", "size": 28, "title": "\u25c6 macros/generate_schema_name.sql:23:unparseable_sql_0\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 0.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/macros/generate_schema_name.sql:23-38"}, {"color": {"background": "#F44336", "border": "#1565C0", "highlight": {"background": "#FFEB3B", "border": "#F57F17"}, "hover": {"background": "#FFF9C4", "border": "#F57F17"}}, "font": {"color": "#CDD6F4"}, "id": "/home/yosef/Desktop/intensive/jaffle-shop/macros/cents_to_dollars.sql:21:unparseable_sql_0", "label": "macros/cents_to_dollars.sql:21:unparseable_sql_0", "shape": "ellipse", "size": 28, "title": "\u25c6 macros/cents_to_dollars.sql:21:unparseable_sql_0\nType : dbt transformation model\nKind : transformation\n\nEvidence   : sqlglot\nConfidence : 0.00\nFile       : /home/yosef/Desktop/intensive/jaffle-shop/macros/cents_to_dollars.sql:21-36"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "ecom.raw_customers", "label": "consumes", "title": "\u25c6 ecom.raw_customers \u2192 dbt_model:stg_customers\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027ecom.raw_customers\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:stg_customers", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "ecom.raw_orders", "label": "consumes", "title": "\u25c6 ecom.raw_orders \u2192 dbt_model:stg_orders\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027ecom.raw_orders\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:stg_orders", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "ecom.raw_items", "label": "consumes", "title": "\u25c6 ecom.raw_items \u2192 dbt_model:stg_order_items\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027ecom.raw_items\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:stg_order_items", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "ecom.raw_stores", "label": "consumes", "title": "\u25c6 ecom.raw_stores \u2192 dbt_model:stg_locations\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027ecom.raw_stores\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:stg_locations", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "ecom.raw_products", "label": "consumes", "title": "\u25c6 ecom.raw_products \u2192 dbt_model:stg_products\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027ecom.raw_products\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:stg_products", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "ecom.raw_supplies", "label": "consumes", "title": "\u25c6 ecom.raw_supplies \u2192 dbt_model:stg_supplies\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027ecom.raw_supplies\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:stg_supplies", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "orders", "label": "consumes", "title": "\u25c6 orders \u2192 dbt_model:customers\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027orders\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:customers", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "order_items", "label": "consumes", "title": "\u25c6 order_items \u2192 dbt_model:orders\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027order_items\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:orders", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_customers", "label": "consumes", "title": "\u25c6 stg_customers \u2192 dbt_model:customers\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_customers\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:customers", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_locations", "label": "consumes", "title": "\u25c6 stg_locations \u2192 dbt_model:locations\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_locations\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:locations", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_products", "label": "consumes", "title": "\u25c6 stg_products \u2192 dbt_model:products\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_products\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:products", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_products", "label": "consumes", "title": "\u25c6 stg_products \u2192 dbt_model:order_items\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_products\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:order_items", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_order_items", "label": "consumes", "title": "\u25c6 stg_order_items \u2192 dbt_model:order_items\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_order_items\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:order_items", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_supplies", "label": "consumes", "title": "\u25c6 stg_supplies \u2192 dbt_model:order_items\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_supplies\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:order_items", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_supplies", "label": "consumes", "title": "\u25c6 stg_supplies \u2192 dbt_model:supplies\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_supplies\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:supplies", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_orders", "label": "consumes", "title": "\u25c6 stg_orders \u2192 dbt_model:order_items\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_orders\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:order_items", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "stg_orders", "label": "consumes", "title": "\u25c6 stg_orders \u2192 dbt_model:orders\nEdge type     : data flow\nVia dbt model : consumes\nMeaning       : \u0027stg_orders\u0027 is read as input by transformation \u0027consumes\u0027\n\nConfidence : 1.00", "to": "dbt_model:orders", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:customers", "label": "produces", "title": "\u25c6 dbt_model:customers \u2192 customers\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027customers\u0027\n\nConfidence : 1.00", "to": "customers", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:products", "label": "produces", "title": "\u25c6 dbt_model:products \u2192 products\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027products\u0027\n\nConfidence : 1.00", "to": "products", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:order_items", "label": "produces", "title": "\u25c6 dbt_model:order_items \u2192 order_items\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027order_items\u0027\n\nConfidence : 1.00", "to": "order_items", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:orders", "label": "produces", "title": "\u25c6 dbt_model:orders \u2192 orders\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027orders\u0027\n\nConfidence : 1.00", "to": "orders", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:metricflow_time_spine", "label": "produces", "title": "\u25c6 dbt_model:metricflow_time_spine \u2192 metricflow_time_spine\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027metricflow_time_spine\u0027\n\nConfidence : 1.00", "to": "metricflow_time_spine", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:locations", "label": "produces", "title": "\u25c6 dbt_model:locations \u2192 locations\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027locations\u0027\n\nConfidence : 1.00", "to": "locations", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:supplies", "label": "produces", "title": "\u25c6 dbt_model:supplies \u2192 supplies\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027supplies\u0027\n\nConfidence : 1.00", "to": "supplies", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:stg_orders", "label": "produces", "title": "\u25c6 dbt_model:stg_orders \u2192 stg_orders\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027stg_orders\u0027\n\nConfidence : 1.00", "to": "stg_orders", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:stg_products", "label": "produces", "title": "\u25c6 dbt_model:stg_products \u2192 stg_products\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027stg_products\u0027\n\nConfidence : 1.00", "to": "stg_products", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:stg_supplies", "label": "produces", "title": "\u25c6 dbt_model:stg_supplies \u2192 stg_supplies\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027stg_supplies\u0027\n\nConfidence : 1.00", "to": "stg_supplies", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:stg_order_items", "label": "produces", "title": "\u25c6 dbt_model:stg_order_items \u2192 stg_order_items\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027stg_order_items\u0027\n\nConfidence : 1.00", "to": "stg_order_items", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:stg_customers", "label": "produces", "title": "\u25c6 dbt_model:stg_customers \u2192 stg_customers\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027stg_customers\u0027\n\nConfidence : 1.00", "to": "stg_customers", "width": 2}, {"arrows": "to", "color": "#4CAF50", "dashes": false, "from": "dbt_model:stg_locations", "label": "produces", "title": "\u25c6 dbt_model:stg_locations \u2192 stg_locations\nEdge type     : data flow\nVia dbt model : produces\nMeaning       : transformation \u0027produces\u0027 writes out \u0027stg_locations\u0027\n\nConfidence : 1.00", "to": "stg_locations", "width": 2}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"enabled": true, "solver": "forceAtlas2Based", "forceAtlas2Based": {"gravitationalConstant": -120, "springLength": 160, "springConstant": 0.05, "damping": 0.9}, "stabilization": {"iterations": 200}}, "edges": {"arrows": {"to": {"enabled": true, "scaleFactor": 0.7}}, "smooth": {"type": "cubicBezier", "forceDirection": "horizontal", "roundness": 0.4}, "font": {"size": 10, "color": "#B0BEC5", "strokeWidth": 0}, "color": {"inherit": false}, "width": 1.5}, "nodes": {"font": {"size": 13, "bold": true}, "borderWidth": 2, "borderWidthSelected": 4}, "interaction": {"hover": true, "tooltipDelay": 80, "selectConnectedEdges": true, "navigationButtons": true, "keyboard": true}, "layout": {"improvedLayout": true}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    
+<div id="legend" style="
+    position:fixed; bottom:16px; left:16px; z-index:999;
+    background:#2A2A3E; border:1px solid #444; border-radius:8px;
+    padding:12px 16px; font-family:Helvetica,sans-serif;
+    font-size:12px; color:#CDD6F4; min-width:280px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.5);">
+  <div style="font-weight:bold;margin-bottom:8px;font-size:13px">Legend</div>
+  <div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#4CAF50;font-size:18px;line-height:1">●</span><span>Raw source dataset (ecom.raw_*)</span></div><div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#2196F3;font-size:18px;line-height:1">●</span><span>Staging dataset (stg_*)</span></div><div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#F44336;font-size:18px;line-height:1">●</span><span>Mart / output dataset</span></div><div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#FF9800;font-size:18px;line-height:1">●</span><span>Generated dataset (no source inputs)</span></div><div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#FF9800;font-size:18px;line-height:1">■</span><span>dbt transformation model (SQL file)</span></div><div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#4CAF50;font-size:18px;line-height:1">─</span><span>consumes — dataset feeds into transformation</span></div><div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#4CAF50;font-size:18px;line-height:1">─</span><span>produces — transformation writes out dataset</span></div><div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="color:#90A4AE;font-size:18px;line-height:1">- -</span><span>Dashed edge = low-confidence (< 0.7)</span></div>
+  <div style="margin-top:8px;border-top:1px solid #444;padding-top:8px;font-size:11px;color:#888">
+    Click a node to highlight its neighbours · Click background to reset
+  </div>
+</div>
+
+<script type="text/javascript">
+network.on("click", function(params) {
+    if (params.nodes.length > 0) {
+        var selectedNode = params.nodes[0];
+        var connectedNodes = network.getConnectedNodes(selectedNode);
+        var connectedEdges = network.getConnectedEdges(selectedNode);
+        var allNodes = network.body.data.nodes.get();
+        var allEdges = network.body.data.edges.get();
+        var updateNodes = [];
+        var updateEdges = [];
+        allNodes.forEach(function(node) {
+            if (node.id === selectedNode) {
+                updateNodes.push({id: node.id, opacity: 1.0, borderWidth: 4});
+            } else if (connectedNodes.includes(node.id)) {
+                updateNodes.push({id: node.id, opacity: 0.9, borderWidth: 3});
+            } else {
+                updateNodes.push({id: node.id, opacity: 0.15});
+            }
+        });
+        allEdges.forEach(function(edge) {
+            if (connectedEdges.includes(edge.id)) {
+                updateEdges.push({id: edge.id, width: 3, color: {opacity: 1.0}});
+            } else {
+                updateEdges.push({id: edge.id, width: 1, color: {opacity: 0.1}});
+            }
+        });
+        network.body.data.nodes.update(updateNodes);
+        network.body.data.edges.update(updateEdges);
+    } else {
+        var allNodes = network.body.data.nodes.get();
+        var allEdges = network.body.data.edges.get();
+        network.body.data.nodes.update(allNodes.map(function(n) {
+            return {id: n.id, opacity: 1.0, borderWidth: 2};
+        }));
+        network.body.data.edges.update(allEdges.map(function(e) {
+            return {id: e.id, width: 2, color: {opacity: 1.0}};
+        }));
+    }
+});
+</script>
+
+</body>
+</html>
