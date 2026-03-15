@@ -5,61 +5,53 @@ quickly understand the codebase architecture and critical components.
 
 ## Analysis Metadata
 
-- **Generated:** 2026-03-14T08:15:44.712481
-- **Modules Analyzed:** 0
-- **Datasets Identified:** 0
-- **Transformations Tracked:** 0
+- **Generated:** 2026-03-15 05:02:19
+- **Repository:** `/home/yosef/Desktop/intensive/jaffle-shop`
+- **Modules Analyzed:** 37
+- **Datasets Identified:** 19
+- **Transformations Tracked:** 15
 
 
 ## Question 1: Where does data come from?
 
 ### Answer
 
-Data comes from six raw tables in the ecom schema, which are ingested through dbt model transformations in the staging layer.
+Data comes from six raw tables in the ecom schema, ingested through dbt model transformations. The sources are:
 
-The raw data sources are:
-- `ecom.raw_items` (inferred from transformations)
-- `ecom.raw_stores` (inferred from transformations) 
-- `ecom.raw_supplies` (inferred from transformations)
-- `ecom.raw_products` (inferred from transformations)
-- `ecom.raw_orders` (inferred from transformations)
-- `ecom.raw_customers` (inferred from transformations)
+- `ecom.raw_customers` → `models/staging/stg_customers.sql:1-24`
+- `ecom.raw_orders` → `models/staging/stg_orders.sql:1-34` 
+- `ecom.raw_items` → `models/staging/stg_order_items.sql:1-23`
+- `ecom.raw_stores` → `models/staging/stg_locations.sql:1-30`
+- `ecom.raw_products` → `models/staging/stg_products.sql:1-35`
+- `ecom.raw_supplies` → `models/staging/stg_supplies.sql:1-32`
 
-These are transformed into staging models in `models/staging/`:
-- `stg_orders.sql:1-34` transforms `ecom.raw_orders`
-- `stg_products.sql:1-35` transforms `ecom.raw_products` 
-- `stg_supplies.sql:1-32` transforms `ecom.raw_supplies`
-- `stg_order_items.sql:1-23` transforms `ecom.raw_items`
-- `stg_customers.sql:1-24` transforms `ecom.raw_customers`
-- `stg_locations.sql:1-30` transforms `ecom.raw_stores`
-
-The staging models serve as the foundation for downstream analytics and business logic.
+Each raw table is transformed into a staging model via dbt, with the transformation logic defined in the corresponding SQL files in the staging directory.
 
 ### Evidence
 
-1. **Data Source:** `ecom.raw_items` (table)
-   - Location: `inferred_from_transformations`
-   - Confidence: 0.50
+1. **Data Source:** `ecom.raw_customers` (table)
+   - Location: `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml`
+   - Confidence: 1.00
 
-2. **Data Source:** `ecom.raw_stores` (table)
-   - Location: `inferred_from_transformations`
-   - Confidence: 0.50
+2. **Data Source:** `ecom.raw_orders` (table)
+   - Location: `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml`
+   - Confidence: 1.00
 
-3. **Data Source:** `ecom.raw_supplies` (table)
-   - Location: `inferred_from_transformations`
-   - Confidence: 0.50
+3. **Data Source:** `ecom.raw_items` (table)
+   - Location: `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml`
+   - Confidence: 1.00
 
-4. **Data Source:** `ecom.raw_products` (table)
-   - Location: `inferred_from_transformations`
-   - Confidence: 0.50
+4. **Data Source:** `ecom.raw_stores` (table)
+   - Location: `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml`
+   - Confidence: 1.00
 
-5. **Data Source:** `ecom.raw_orders` (table)
-   - Location: `inferred_from_transformations`
-   - Confidence: 0.50
+5. **Data Source:** `ecom.raw_products` (table)
+   - Location: `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml`
+   - Confidence: 1.00
 
-6. **Data Source:** `ecom.raw_customers` (table)
-   - Location: `inferred_from_transformations`
-   - Confidence: 0.50
+6. **Data Source:** `ecom.raw_supplies` (table)
+   - Location: `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/__sources.yml`
+   - Confidence: 1.00
 
 7. **Ingestion:** dbt_model transformation
    - Location: `models/staging/stg_orders.sql`:1-34
@@ -102,20 +94,20 @@ The staging models serve as the foundation for downstream analytics and business
 
 ### Answer
 
-The critical outputs are five tables in the marts directory:
+The critical outputs are five tables that serve as the main data products of this codebase:
 
-1. `customers` table - `models/marts/customers.sql:1-59`
+1. `customers` table - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/customers.yml:1-10`
 2. `products` table - `models/marts/products.sql:1-10`  
 3. `metricflow_time_spine` table - `models/marts/metricflow_time_spine.sql:1-20`
 4. `locations` table - `models/marts/locations.sql:1-10`
 5. `supplies` table - `models/marts/supplies.sql:1-10`
 
-These are the main tables that downstream processes (num_sinks: 5) depend on. New developers should prioritize understanding these five tables as they represent the core outputs of the data transformation pipeline.
+These five tables are the primary outputs that downstream systems or consumers would depend on. New developers should understand these are the core data products being generated by this codebase.
 
 ### Evidence
 
 1. **Critical Output:** `customers` (table)
-   - Location: `models/marts/customers.sql`:1-59
+   - Location: `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/customers.yml`
    - Confidence: 1.00
 
 2. **Critical Output:** `products` (table)
@@ -145,32 +137,24 @@ These are the main tables that downstream processes (num_sinks: 5) depend on. Ne
 
 ### Answer
 
-If critical components break, the impact can be severe and widespread across the codebase. Based on the blast radius analysis:
-
-**ecom.raw_items** (`Evidence 1`) affects 8 components including `dbt_model:stg_order_items`, `stg_order_items`, `customers`, and `order_items`. This suggests that breaking this component would disrupt order processing and customer data flows.
-
-**ecom.raw_stores** (`Evidence 2`) impacts 4 components including `locations` and `stg_locations`. A failure here would affect store location data and related operations.
-
-**ecom.raw_supplies** (`Evidence 3`) has the largest blast radius, affecting 10 components including `supplies`, `dbt_model:stg_supplies`, `customers`, and `order_items`. This indicates that breaking this component would have cascading effects on both supply chain operations and customer/order management systems.
-
-The most critical finding is that **ecom.raw_supplies** affects the most components (10), making it the highest priority for stability and monitoring. New developers should be particularly cautious when modifying this component due to its extensive dependencies.
+If critical components break, the impact cascades through multiple dependent systems. For example, breaking `ecom.raw_customers` affects 4 components including `stg_customers` and `dbt_model:customers` (Evidence 1). Similarly, breaking `ecom.raw_orders` or `ecom.raw_items` impacts 8 components each, including `orders`, `order_items`, and their dbt models (Evidence 2-3). This means a single failure can disrupt data pipelines, downstream analytics, and reporting systems. New developers should prioritize monitoring these critical components and understanding their dependencies to prevent widespread outages.
 
 ### Evidence
 
-1. **Blast Radius:** `ecom.raw_items`
-   - Affected Components: 8
-   - Examples: dbt_model:stg_order_items, stg_order_items, customers, order_items, dbt_model:customers
-   - Location: `ecom.raw_items`
-
-2. **Blast Radius:** `ecom.raw_stores`
+1. **Blast Radius:** `ecom.raw_customers`
    - Affected Components: 4
-   - Examples: locations, stg_locations, dbt_model:stg_locations, dbt_model:locations
-   - Location: `ecom.raw_stores`
+   - Examples: stg_customers, dbt_model:customers, dbt_model:stg_customers, customers
+   - Location: `ecom.raw_customers`
 
-3. **Blast Radius:** `ecom.raw_supplies`
-   - Affected Components: 10
-   - Examples: supplies, dbt_model:stg_supplies, customers, order_items, stg_supplies
-   - Location: `ecom.raw_supplies`
+2. **Blast Radius:** `ecom.raw_orders`
+   - Affected Components: 8
+   - Examples: order_items, orders, dbt_model:order_items, dbt_model:orders, customers
+   - Location: `ecom.raw_orders`
+
+3. **Blast Radius:** `ecom.raw_items`
+   - Affected Components: 8
+   - Examples: order_items, orders, dbt_model:stg_order_items, dbt_model:order_items, dbt_model:orders
+   - Location: `ecom.raw_items`
 
 ### Confidence
 
@@ -183,60 +167,64 @@ The most critical finding is that **ecom.raw_supplies** affects the most compone
 
 ### Answer
 
-Based on the evidence, business logic in this codebase lives primarily in the dbt models within the `models/` directory, particularly in the staging and mart layers.
+Business logic in this codebase lives primarily in the **data mart layer** and **staging models**, where data transformations and business rules are applied.
 
-The business logic is implemented through SQL transformations that:
-- Convert data formats (e.g., `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.sql:1-20` converts prices from cents to dollars)
-- Restructure data to align with business terminology (e.g., `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_orders.sql:1-15` renames columns like `id` to `order_id`)
-- Add business-specific flags and categorizations (e.g., `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.sql:21-30` adds boolean flags for food/drink items)
-- Calculate business metrics (e.g., `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/orders.yml:1-25` calculates order totals and identifies food/drink items)
+The most critical business logic is found in:
 
-The business logic is organized in a layered architecture:
-1. Staging models transform raw data into business-ready formats
-2. Mart models aggregate and calculate business metrics
-3. YAML files define data quality tests and semantic models
+**Data Mart Layer** (`/home/yosef/Desktop/intensive/jaffle-shop/models/marts/`):
+- **Customers mart** (`customers.yml`): Contains business logic for customer classification, lifetime spend calculations, and order history aggregation
+- **Orders mart** (`orders.yml`): Implements business rules for order validation, subtotal calculations, and food/drink item classification
+- **Products mart** (`products.sql`): Applies business logic for product categorization and pricing transformations
 
-This separation ensures business logic is centralized in the data transformation layer rather than scattered throughout the codebase.
+**Staging Models** (`/home/yosef/Desktop/intensive/jaffle-shop/models/staging/`):
+- **Orders staging** (`stg_orders.sql`): Contains business logic for currency conversion (cents to dollars), timestamp truncation, and column renaming to align with business terminology
+- **Products staging** (`stg_products.sql`): Implements business rules for price conversion and boolean flags for food/drink identification
+- **Supplies staging** (`stg_supplies.sql`): Applies business logic for cost conversion and surrogate key generation
+
+The business logic is implemented through dbt models that transform raw data into business-ready formats, with validation tests ensuring data integrity. New developers should focus on the `models/marts/` and `models/staging/` directories when looking for business rules and transformations.
 
 ### Evidence
 
-1. **Domain:** Code Quality Assurance
-   - Module Count: 1
+1. **Domain:** Data Engineering Tools
+   - Module Count: 5
    - Representative Modules:
-     - `/home/yosef/Desktop/intensive/jaffle-shop/.pre-commit-config.yaml`: This module configures pre-commit hooks for a Python project to automatically enforce code quality standards before commits are finalized. It integrates multiple repositories to check YAML syntax, fix trailing whitespace and end-of-file issues, validate requirements.txt formatting, and use Ruff for Python code formatting and linting with automatic fixes. The configuration ensures consistent code quality and formatting across the development team by running these checks locally before code is pushed to version control.
-
-2. **Domain:** Data Warehouse Management
-   - Module Count: 7
-   - Representative Modules:
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_locations.yml`: This module transforms raw store data from the ecom system into a cleaned staging table of open locations, truncating timestamp fields to dates and ensuring data quality through null and uniqueness constraints on location IDs. It provides a standardized view of location information including names, tax rates, and opening dates that can be used by downstream analytics models. The transformation includes basic data cleaning and validation to ensure reliable location data for business reporting and analysis.
-     - `/home/yosef/Desktop/intensive/jaffle-shop/Taskfile.yml`: This module manages the lifecycle of a data warehouse environment for a jaffle shop, automating the setup, data generation, and loading processes. It creates a Python virtual environment, installs necessary dependencies including dbt and database-specific adapters, generates synthetic data for a configurable number of years, and seeds the data warehouse with this information. The module provides a complete workflow from environment setup through data loading and cleanup, enabling reproducible data warehouse initialization for testing or development purposes.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/Taskfile.yml`: This module manages the lifecycle of a data warehouse environment for a jaffle shop, automating the setup, data generation, and loading processes. It creates a Python virtual environment, installs necessary dependencies including dbt, generates synthetic data for a specified number of years, seeds the database with this data, and provides cleanup functionality. The module serves as a complete orchestration tool for initializing and populating a test data warehouse environment, enabling development and testing of data analytics workflows.
      - `/home/yosef/Desktop/intensive/jaffle-shop/dbt_project.yml`: This is a dbt project configuration file for the jaffle_shop data transformation project. It defines the project structure, model paths, and materialization settings for staging views and mart tables, while also configuring seed data loading and timezone settings for data processing. The configuration establishes the foundation for transforming raw data into analytics-ready models within the dbt framework.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/macros/generate_schema_name.sql`: This macro generates database schema names based on the execution context and input parameters. It determines the appropriate schema by checking if the resource is a seed, whether a custom schema name is provided, and the target environment (production vs non-production). The macro ensures seeds are placed in a global `raw` schema, applies custom schema names with appropriate prefixes in production, and defaults to the target schema for unspecified cases.
 
-3. **Domain:** Data Warehousing
-   - Module Count: 14
+2. **Domain:** E-commerce Data Warehousing
+   - Module Count: 9
    - Representative Modules:
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.sql`: This module transforms raw product data from an e-commerce source into a standardized staging format for the jaffle shop. It renames and restructures product attributes, converts prices from cents to dollars, and adds boolean flags to identify food and drink items based on product type. The module serves as a data preparation layer that enables downstream analytics and reporting by providing consistent, enriched product information.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.sql`: This module transforms raw product data from an e-commerce source into a standardized staging format for the jaffle shop. It renames and restructures product attributes, converts prices from cents to dollars, and adds boolean flags to identify food and drink items based on product type. The module serves as a data preparation layer that enables downstream analytics and reporting by providing clean, consistently formatted product information.
      - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_orders.sql`: This module transforms raw e-commerce order data from the source table into a standardized staging format for the jaffle-shop data warehouse. It renames key columns to align with business terminology (e.g., `id` to `order_id`, `store_id` to `location_id`), converts monetary values from cents to dollars for readability, and truncates timestamps to the day level for consistent time-based analysis. The module serves as a foundational data preparation step, ensuring order data is properly structured and formatted for downstream analytics and reporting workflows.
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_supplies.sql`: This module transforms raw supply data from the ecom system into a standardized staging format for the jaffle-shop data warehouse. It generates a unique supply identifier, converts cost from cents to dollars, and standardizes column names while preserving key attributes like product ID, supply name, and perishability status. The module serves as an intermediary layer that prepares supply data for downstream analytics and reporting by creating a consistent, business-ready data structure.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_supplies.sql`: This module transforms raw supply data from the e-commerce system into a standardized staging format for downstream analytics. It generates a unique surrogate key for each supply item, converts cost from cents to dollars, and renames fields to align with the data warehouse schema while preserving key identifiers like supply ID and product SKU. The module serves as an intermediary layer that prepares supply data for consumption by business intelligence tools and reporting systems.
 
-4. **Domain:** Customer Analytics
+3. **Domain:** Customer Analytics Marts
    - Module Count: 7
    - Representative Modules:
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/orders.yml`: The orders mart provides a consolidated view of order data, including key details like order totals, timestamps, and cost breakdowns. It offers business-critical insights through calculated fields that identify whether orders contain food or drink items, and validates data integrity through comprehensive tests ensuring subtotal and total calculations are accurate. This mart serves as a foundational data layer for downstream analytics and reporting, enabling analysis of order patterns, customer behavior, and operational costs across the jaffle shop's business operations.
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/order_items.yml`: The order_items module creates and validates a mart table that contains detailed information about individual items within customer orders, including their costs and relationships to products and orders. It provides data quality tests to ensure unique order item IDs and proper foreign key relationships, while also defining semantic models for business analysis including revenue calculations and categorization of items as food or drink. This module serves as a foundational data layer that enables downstream analytics and reporting on order composition, profitability, and product performance across the jaffle-shop's operations.
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/customers.yml`: This module creates a customer data mart that provides a comprehensive overview of customer information, including order history, spending patterns, and customer classification. It aggregates key metrics such as lifetime spend, order counts, and timestamps to enable analysis of customer behavior and segmentation. The mart serves as a foundational dataset for customer analytics, supporting business intelligence use cases like customer lifetime value analysis, retention tracking, and targeted marketing campaigns.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/orders.yml`: This module creates an orders data mart that provides a comprehensive overview of each order, including key details like order totals, timestamps, and whether the order contained food or drink items. It validates data integrity through tests ensuring subtotal calculations are correct and that order IDs are unique and properly linked to customers. The mart serves as a central reference point for order-level analytics, enabling business users to analyze order patterns, customer behavior, and product mix across the jaffle shop's operations.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/order_items.yml`: This module defines a data mart for order items that validates data integrity through tests ensuring unique order item IDs and proper relationships to orders. It provides a semantic model for analyzing order items at the grain of one row per item, including dimensions for time-based analysis and categorical classifications of food vs drink items. The mart supports business analytics by calculating measures like revenue and supply costs, enabling detailed examination of order composition and profitability.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/customers.yml`: This module creates a customer data mart that provides a comprehensive overview of customer information, including order history, spending patterns, and customer classification. It aggregates key metrics such as lifetime spend, order counts, and timestamps to enable analysis of customer behavior and segmentation. The mart serves as a foundational dataset for customer analytics, supporting business intelligence use cases like customer lifetime value analysis, retention tracking, and marketing segmentation.
 
-5. **Domain:** Product Analytics
-   - Module Count: 2
+4. **Domain:** Data Mart Layer
+   - Module Count: 5
    - Representative Modules:
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/products.yml`: This semantic model defines a product dimension table that provides structured product data for analytics, with each row representing a unique product identified by product_id. The model includes categorical dimensions for product attributes like name, type, description, and pricing flags, enabling analysis of products by various characteristics. It serves as a foundational data mart component that allows business users to query and analyze product-related metrics across different product categories and attributes.
-     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_products.yml`: This module defines a staging model for product data that transforms raw product information into a clean, standardized format with one row per product. It establishes product_id as a unique, non-null key field to ensure data integrity and enable reliable joins with other models in the data warehouse. The model serves as a foundational data layer that prepares product information for downstream analytics and reporting workflows.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_locations.yml`: This module transforms raw store data from the ecom system into a cleaned staging table of open locations, applying basic data cleaning and transformation to create one row per location with standardized fields. It ensures data quality by enforcing uniqueness and non-null constraints on the location_id field, and includes unit tests to verify proper timestamp truncation from opened_at to opened_date format. The module serves as a foundational data layer that prepares location information for downstream analytics and reporting by standardizing and validating the raw store data.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/locations.yml`: This module defines a semantic model for a location dimension table that provides business context for location-based analytics. It enables analysis of location attributes including names and opening dates, while also calculating average tax rates across locations. The model serves as a foundational data mart component that supports time-based analysis of location data through its opened_date grain and categorical attributes.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/marts/products.sql`: This module serves as a mart layer that exposes product data from the staging area for downstream consumption. It retrieves all product records from the stg_products table and makes them available for reporting, analytics, or other business processes that require product information. The module acts as a simple data access point, providing a clean interface to product data without any transformation or business logic.
+
+5. **Domain:** Data Staging Models
+   - Module Count: 5
+   - Representative Modules:
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_customers.sql`: This module extracts customer data from the raw e-commerce source table and transforms it by renaming key columns to align with the data warehouse naming conventions. It specifically maps the customer ID and name fields, providing a clean staging layer for customer information that can be used in downstream analytics and reporting. The module serves as a foundational data transformation step in the e-commerce data pipeline, ensuring consistent customer data structure across the organization's analytics ecosystem.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_supplies.yml`: This module defines a staging model for supply expense data that transforms raw supply cost records into a structured format with unique identifiers for each cost entry. It creates a table where each row represents a specific supply cost instance (not aggregated by supply), allowing for tracking of cost fluctuations over time through new UUIDs for each price change. The model enforces data integrity by ensuring each supply cost record has a unique, non-null identifier, supporting downstream analytics on supply expense trends and variations.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/models/staging/stg_orders.yml`: This module defines a staging model for order data that applies basic cleaning and transformation to ensure data quality, with one row per order. It includes data validation rules to verify that order totals are calculated correctly (order_total - tax_paid = subtotal) and enforces data integrity by ensuring order_id is both unique and not null. The model serves as a foundational data layer that transforms raw order data into a reliable format for downstream analytics and reporting.
 
 6. **Domain:** Data Pipeline Automation
    - Module Count: 4
    - Representative Modules:
-     - `/home/yosef/Desktop/intensive/jaffle-shop/.github/workflows/scripts/dbt_cloud_run_job.py`: This Python module provides programmatic control over dbt (data build tool) jobs through the dbt Cloud API. It enables triggering dbt job runs with configurable parameters like git branch and schema overrides, while monitoring job status through a mapping of integer codes to human-readable states. The module serves as an automation interface for dbt Cloud operations, allowing external systems to initiate and track data transformation workflows programmatically.
-     - `/home/yosef/Desktop/intensive/jaffle-shop/.github/workflows/ci.yml`: This GitHub Actions workflow automatically triggers dbt Cloud jobs for pull requests targeting the main or staging branches, running data transformation tests across multiple database platforms (Snowflake, BigQuery, and Postgres). It sets up the environment with specific dbt Cloud job configurations, installs dependencies using uv, and executes the dbt Cloud job script to validate data transformations in isolated schemas based on the pull request branch name. The workflow serves as a continuous integration mechanism to ensure data model changes are tested across different database systems before merging, helping maintain data quality and consistency in the jaffle-shop project.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/.github/workflows/scripts/dbt_cloud_run_job.py`: This Python module provides programmatic control over dbt (data build tool) jobs through the dbt Cloud API. It enables triggering dbt job executions with configurable parameters like git branch and schema overrides, while also providing functionality to monitor job status through polling mechanisms. The module serves as an automation interface for dbt Cloud operations, allowing external systems to initiate and track data transformation workflows programmatically.
+     - `/home/yosef/Desktop/intensive/jaffle-shop/.github/workflows/ci.yml`: This GitHub Actions workflow automatically triggers dbt Cloud jobs for pull requests targeting the main or staging branches, running data transformation tests across three different database platforms (Snowflake, BigQuery, and Postgres). The workflow sets up the environment, installs dependencies, and executes dbt Cloud jobs with branch-specific schema overrides to validate data transformations in isolated environments before merging changes. It serves as a continuous integration pipeline that ensures data model changes are tested across multiple database systems, providing early validation of data transformations in a production-like environment.
      - `/home/yosef/Desktop/intensive/jaffle-shop/.github/workflows/cd_prod.yml`: This GitHub Actions workflow automates the deployment of dbt (data build tool) projects to production environments across three different data warehouses: Snowflake, BigQuery, and PostgreSQL. When code is pushed to the main branch, it triggers parallel jobs that install dependencies, authenticate with dbt Cloud using API credentials, and execute pre-configured dbt Cloud jobs to transform and deploy data models. The workflow serves as a CI/CD pipeline that ensures consistent, automated deployment of data transformations to production data warehouses whenever changes are merged to the main branch.
 
 ### Confidence
@@ -287,3 +275,5 @@ For new developers, this suggests that configuration files, particularly those r
 - **Questions Answered:** 5/5
 - **Total Evidence Citations:** 29
 - **Average Confidence:** 0.86
+
+**Analysis Completeness:** This brief covers 37 modules across the entire codebase.
