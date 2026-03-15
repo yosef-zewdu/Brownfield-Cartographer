@@ -63,11 +63,26 @@ class FindImplementationTool:
         # Embed query
         query_embedding = self.embed_query(concept)
         
-        # Search purposes
-        results = self.search_purposes(query_embedding, top_k)
+        # Search purposes — fetch more candidates to allow deduplication
+        results = self.search_purposes(query_embedding, top_k * 3)
+        
+        # Deduplicate: keep only the highest-scoring file per model stem
+        # e.g. customers.sql and customers.yml → keep whichever scores higher
+        seen_stems: dict = {}
+        deduped = []
+        for module, score in results:
+            import os
+            stem = os.path.splitext(os.path.basename(module.path))[0]
+            parent = os.path.basename(os.path.dirname(module.path))
+            key = f"{parent}/{stem}"
+            if key not in seen_stems:
+                seen_stems[key] = True
+                deduped.append((module, score))
+            if len(deduped) >= top_k:
+                break
         
         # Format results with provenance
-        formatted_results = self.format_results(results)
+        formatted_results = self.format_results(deduped)
         
         return {
             'query': concept,
@@ -427,15 +442,42 @@ class BlastRadiusTool:
         logger.info(f"Computing blast radius for: {module_path}")
         
         if module_path not in self.module_graph:
+            # Fall back to lineage graph lookup
+            if module_path in self.lineage_graph:
+                try:
+                    descendants = nx.descendants(self.lineage_graph, module_path)
+                    affected = sorted(list(descendants))
+                    return {
+                        'module': module_path,
+                        'affected_module_count': len(affected),
+                        'affected_modules': affected,
+                        'affected_dataset_count': len(affected),
+                        'affected_datasets': [
+                            {'name': n, **{k: v for k, v in self.lineage_graph.nodes[n].items()
+                                           if k in ('storage_type', 'node_type', 'discovered_in')}}
+                            for n in affected
+                        ],
+                        'provenance': {
+                            'evidence_type': 'heuristic',
+                            'confidence': 0.9,
+                            'resolution_status': 'resolved',
+                            'method': 'networkx_descendants',
+                            'note': 'Blast radius computed from lineage graph (not module graph)'
+                        }
+                    }
+                except nx.NetworkXError:
+                    pass
             return {
                 'module': module_path,
+                'affected_module_count': 0,
                 'affected_modules': [],
+                'affected_dataset_count': 0,
                 'affected_datasets': [],
                 'provenance': {
                     'evidence_type': 'heuristic',
                     'confidence': 0.0,
                     'resolution_status': 'inferred',
-                    'message': f'Module {module_path} not found in module graph'
+                    'message': f'Module {module_path} not found in module graph or lineage graph'
                 }
             }
         
@@ -556,16 +598,18 @@ class BlastRadiusTool:
 class ExplainModuleTool:
     """Explain module purpose and metadata with provenance."""
     
-    def __init__(self, modules: List[ModuleNode], module_graph: nx.DiGraph):
+    def __init__(self, modules: List[ModuleNode], module_graph: nx.DiGraph, lineage_graph: nx.DiGraph = None):
         """
         Initialize module explanation tool.
         
         Args:
             modules: List of module nodes
             module_graph: Module dependency graph
+            lineage_graph: Data lineage graph (optional, for dbt/SQL context)
         """
         self.modules_by_path = {m.path: m for m in modules}
         self.module_graph = module_graph
+        self.lineage_graph = lineage_graph
         logger.info(f"Initialized ExplainModuleTool with {len(modules)} modules")
     
     def __call__(self, path: str) -> Dict[str, Any]:
@@ -633,6 +677,27 @@ class ExplainModuleTool:
             info['imported_by_count'] = self.module_graph.out_degree(module.path)
             info['imported_by'] = list(self.module_graph.successors(module.path))
         
+        # Add lineage context for SQL/dbt models
+        if hasattr(self, 'lineage_graph') and self.lineage_graph is not None:
+            # Find the dataset node matching this file
+            for node_id in self.lineage_graph.nodes():
+                node_data = self.lineage_graph.nodes[node_id]
+                src = node_data.get('discovered_in', '') or node_data.get('source_file', '') or ''
+                if src and (module.path.endswith(src) or src in module.path):
+                    if node_data.get('node_type') == 'dataset':
+                        # Find transformation that produces this dataset
+                        producers = [u for u, v in self.lineage_graph.in_edges(node_id)
+                                     if self.lineage_graph.nodes[u].get('node_type') == 'transformation']
+                        consumers = [v for u, v in self.lineage_graph.out_edges(node_id)
+                                     if self.lineage_graph.nodes[v].get('node_type') == 'transformation']
+                        if producers or consumers:
+                            info['lineage_node'] = node_id
+                            info['consumed_by'] = [self.lineage_graph.nodes[t].get('source_file', t)
+                                                   for t in consumers]
+                            info['produced_from'] = [self.lineage_graph.nodes[p].get('source_datasets', [])
+                                                     for p in producers]
+                            break
+        
         # Add provenance
         info['provenance'] = {
             'evidence_type': module.provenance.evidence_type,
@@ -660,21 +725,23 @@ class ExplainModuleTool:
         # Add purpose statement provenance if available
         if module_info.get('purpose_statement'):
             provenance_chain.append({
-                'source': 'purpose_statement',
+                'source': module_info['provenance'].get('source_file', ''),
                 'evidence_type': 'llm',
-                'confidence': 0.7,  # LLM-generated
+                'confidence': 0.7,
                 'resolution_status': 'inferred',
-                'note': 'Purpose statement generated by LLM'
+                'line_range': module_info['provenance'].get('line_range'),
+                'note': 'Purpose statement generated by LLM from source file'
             })
         
         # Add domain cluster provenance if available
         if module_info.get('domain_cluster'):
             provenance_chain.append({
-                'source': 'domain_cluster',
+                'source': module_info['provenance'].get('source_file', ''),
                 'evidence_type': 'heuristic',
-                'confidence': 0.8,  # Clustering is heuristic
+                'confidence': 0.8,
                 'resolution_status': 'inferred',
-                'note': 'Domain cluster assigned by k-means clustering'
+                'line_range': None,
+                'note': 'Domain cluster assigned by k-means clustering on purpose embeddings'
             })
         
         return {
@@ -710,10 +777,17 @@ class ExplainModuleTool:
         if module_info.get('change_velocity'):
             lines.append(f"Change Velocity: {module_info['change_velocity']} commits")
         
-        if module_info.get('import_count') is not None:
+        # Show lineage context for SQL/dbt models, import context for Python
+        if module_info.get('lineage_node'):
+            lines.append(f"Lineage node: {module_info['lineage_node']}")
+            if module_info.get('produced_from'):
+                sources = [s for sublist in module_info['produced_from'] for s in sublist]
+                if sources:
+                    lines.append(f"Consumes: {', '.join(sources[:6])}")
+            if module_info.get('consumed_by'):
+                lines.append(f"Consumed by: {', '.join(module_info['consumed_by'][:4])}")
+        elif module_info.get('import_count') is not None:
             lines.append(f"Imports: {module_info['import_count']} modules")
-        
-        if module_info.get('imported_by_count') is not None:
             lines.append(f"Imported by: {module_info['imported_by_count']} modules")
         
         if module_info.get('is_dead_code_candidate'):
@@ -771,7 +845,7 @@ class NavigatorAgent:
             'find_implementation': FindImplementationTool(self.modules),
             'trace_lineage': TraceLineageTool(self.lineage_graph),
             'blast_radius': BlastRadiusTool(self.module_graph, self.lineage_graph),
-            'explain_module': ExplainModuleTool(self.modules, self.module_graph)
+            'explain_module': ExplainModuleTool(self.modules, self.module_graph, self.lineage_graph)
         }
         
         logger.info(f"Created {len(tools)} query tools")
@@ -819,16 +893,28 @@ class NavigatorAgent:
                 result = tool(query, top_k=top_k)
             
             elif tool_name == 'trace_lineage':
-                direction = kwargs.get('direction', 'downstream')
                 max_depth = kwargs.get('max_depth', None)
-                result = tool(query, direction=direction, max_depth=max_depth)
+                # Extract dataset name from natural language query
+                dataset = self._extract_dataset_name(query)
+                # Use explicit direction kwarg if provided; otherwise infer from query
+                if 'direction' in kwargs:
+                    direction = kwargs['direction']
+                else:
+                    query_lower = query.lower()
+                    if any(kw in query_lower for kw in ['downstream', 'descendants', 'consumers', 'feeds into', 'impacts']):
+                        direction = 'downstream'
+                    else:
+                        direction = 'upstream'
+                result = tool(dataset, direction=direction, max_depth=max_depth)
             
             elif tool_name == 'blast_radius':
                 include_data_lineage = kwargs.get('include_data_lineage', True)
-                result = tool(query, include_data_lineage=include_data_lineage)
+                module_path = self._extract_dataset_name(query)
+                result = tool(module_path, include_data_lineage=include_data_lineage)
             
             elif tool_name == 'explain_module':
-                result = tool(query)
+                module_path = self._extract_dataset_name(query)
+                result = tool(module_path)
             
             else:
                 result = tool(query)
@@ -856,6 +942,38 @@ class NavigatorAgent:
                 }
             }
     
+    def _extract_dataset_name(self, query: str) -> str:
+        """
+        Extract a dataset/node name or file path from a natural language query.
+
+        Tries to match known graph nodes first (longest match wins); also
+        detects file paths embedded in the query; falls back to the last token.
+        """
+        query_lower = query.lower()
+
+        # Check for an embedded file path (contains '/' or '.sql'/'.py'/'.yml')
+        import re
+        path_match = re.search(r'[\w./\-]+(?:/[\w./\-]+)+', query)
+        if path_match:
+            candidate = path_match.group(0).rstrip('.')
+            # Check module graph first (full paths)
+            if candidate in self.tools['explain_module'].modules_by_path:
+                return candidate
+            # Try with absolute prefix from known modules
+            for known_path in self.tools['explain_module'].modules_by_path:
+                if known_path.endswith(candidate) or candidate in known_path:
+                    return known_path
+
+        # Try to match a known lineage node name (longest match wins)
+        known_nodes = list(self.tools['trace_lineage'].lineage_graph.nodes())
+        matches = [n for n in known_nodes if n.lower() in query_lower]
+        if matches:
+            return max(matches, key=len)
+
+        # Fallback: last token
+        tokens = query.strip().split()
+        return tokens[-1] if tokens else query
+
     def _detect_tool(self, query: str) -> str:
         """
         Auto-detect appropriate tool based on query keywords.
@@ -868,16 +986,27 @@ class NavigatorAgent:
         """
         query_lower = query.lower()
         
-        # Check for lineage keywords
-        if any(kw in query_lower for kw in ['lineage', 'upstream', 'downstream', 'trace', 'flow']):
+        # Lineage / provenance questions
+        if any(kw in query_lower for kw in [
+            'lineage', 'upstream', 'downstream', 'trace', 'flow',
+            'produces', 'produced by', 'what produces', 'where does',
+            'comes from', 'source of', 'feeds into', 'depends on',
+            'what creates', 'what generates', 'origin of'
+        ]):
             return 'trace_lineage'
         
-        # Check for blast radius keywords
-        if any(kw in query_lower for kw in ['blast', 'impact', 'affect', 'break', 'change', 'dependency']):
+        # Blast radius / impact questions
+        if any(kw in query_lower for kw in [
+            'blast', 'impact', 'affect', 'break', 'change',
+            'dependency', 'what breaks', 'if i change', 'cascade'
+        ]):
             return 'blast_radius'
         
-        # Check for module explanation keywords
-        if any(kw in query_lower for kw in ['explain', 'what is', 'what does', 'module', 'info', 'metadata']):
+        # Module explanation questions
+        if any(kw in query_lower for kw in [
+            'explain', 'what is', 'what does', 'module', 'info',
+            'metadata', 'describe', 'tell me about'
+        ]):
             return 'explain_module'
         
         # Default to semantic search
@@ -984,60 +1113,203 @@ class NavigatorAgent:
         print("=" * 80)
     
     def _display_result(self, result: Dict[str, Any]):
-        """
-        Display query result in a formatted way.
-        
-        Args:
-            result: Query result dictionary
-        """
+        """Display query result with natural-language answer and full evidence citations."""
         print("\n" + "-" * 80)
-        
-        # Check for errors
+
         if 'error' in result:
             print(f"❌ Error: {result['error']}")
             if 'available_tools' in result:
                 print(f"Available tools: {', '.join(result['available_tools'])}")
+            print("-" * 80)
             return
-        
-        # Display based on result type
-        if 'query_metadata' in result:
-            metadata = result['query_metadata']
-            print(f"Tool: {metadata['tool_used']}")
-            print(f"Query: {metadata['original_query']}")
-        
-        # Display provenance
-        if 'provenance' in result:
-            prov = result['provenance']
-            print(f"\nProvenance: {prov['evidence_type']} "
-                  f"(confidence: {prov.get('confidence', 0.0):.2f})")
-        
-        # Display tool-specific results
-        if 'results' in result:  # FindImplementationTool
-            print(f"\nFound {len(result['results'])} results:")
-            for i, res in enumerate(result['results'][:5], 1):
-                print(f"\n  {i}. {res['path']}")
-                print(f"     Similarity: {res['similarity_score']:.3f}")
-                print(f"     Purpose: {res['purpose'][:100]}...")
-        
-        elif 'nodes' in result:  # TraceLineageTool
-            print(f"\nLineage: {result.get('direction', 'unknown')}")
-            print(f"Nodes: {result.get('node_count', 0)}")
-            print(f"Edges: {result.get('edge_count', 0)}")
-            if result.get('nodes'):
-                print("\nNodes:")
-                for node in result['nodes'][:10]:
-                    print(f"  - {node['id']} ({node['type']})")
-        
-        elif 'affected_modules' in result:  # BlastRadiusTool
-            print(f"\nModule: {result['module']}")
-            print(f"Affected modules: {result['affected_module_count']}")
-            print(f"Affected datasets: {result['affected_dataset_count']}")
-            if result['affected_modules']:
-                print("\nAffected modules:")
-                for module in result['affected_modules'][:10]:
-                    print(f"  - {module}")
-        
-        elif 'summary' in result:  # ExplainModuleTool
+
+        metadata = result.get('query_metadata', {})
+        tool_used = metadata.get('tool_used', 'unknown')
+        original_query = metadata.get('original_query', '')
+
+        print(f"Tool: {tool_used}")
+        print(f"Query: {original_query}")
+
+        def fmt_evidence(prov: dict, label: str = "") -> str:
+            """Format a single provenance dict as a citation line."""
+            if not prov:
+                return ""
+            ev = prov.get('evidence_type', '?')
+            conf = prov.get('confidence', 0.0)
+            src = prov.get('source_file', '') or ''
+            lr = prov.get('line_range')
+            status = prov.get('resolution_status', '')
+            # Trust label
+            if ev in ('tree_sitter', 'sqlglot', 'yaml_parse'):
+                trust = 'static-analysis'
+            elif ev == 'llm':
+                trust = 'llm-inference'
+            else:
+                trust = 'heuristic'
+            src_short = src.split('/')[-1] if src else ''
+            line_part = f":{lr[0]}-{lr[1]}" if lr else ""
+            prefix = f"[{label}] " if label else ""
+            return f"  {prefix}evidence={trust}({ev})  conf={conf:.2f}  status={status}  file={src_short}{line_part}"
+
+        # ── FindImplementationTool ──────────────────────────────────────────
+        if 'results' in result:
+            results = result['results']
+            if not results:
+                print("\nNo matching modules found.")
+            else:
+                print(f"\nFound {len(results)} result(s):\n")
+                for i, res in enumerate(results[:5], 1):
+                    path = res['path']
+                    score = res['similarity_score']
+                    purpose = res.get('purpose', '')
+                    domain = res.get('domain_cluster', '')
+                    prov = res.get('provenance', {})
+                    src_file = prov.get('source_file', path)
+                    lr = prov.get('line_range')
+                    line_part = f":{lr[0]}-{lr[1]}" if lr else ""
+                    print(f"  {i}. {src_file}{line_part}")
+                    if domain:
+                        print(f"     Domain: {domain}  |  Similarity: {score:.3f}")
+                    if purpose:
+                        wrapped = purpose if len(purpose) <= 220 else purpose[:217] + '...'
+                        print(f"     {wrapped}")
+                    ev = prov.get('evidence_type', '?')
+                    conf = prov.get('confidence', 0.0)
+                    src = prov.get('source_file', '') or path
+                    status = prov.get('resolution_status', '')
+                    print(f"  Provenance: evidence={ev}  conf={conf:.2f}  status={status}  file={src}")
+                    print()
+
+        # ── TraceLineageTool ────────────────────────────────────────────────
+        elif 'nodes' in result and 'direction' in result:
+            direction = result.get('direction', 'upstream')
+            node_count = result.get('node_count', 0)
+            edge_count = result.get('edge_count', 0)
+            dataset = result.get('dataset', '')
+            nodes = result.get('nodes', [])
+
+            print(f"\nLineage: {direction} from `{dataset}`")
+            print(f"Nodes: {node_count}  Edges: {edge_count}")
+
+            if node_count <= 1:
+                if direction == 'downstream':
+                    print(f"\n`{dataset}` is a terminal sink — nothing depends on it downstream.")
+                else:
+                    print(f"\n`{dataset}` has no upstream dependencies — it is a raw source.")
+            else:
+                datasets = [n for n in nodes if n.get('type') == 'dataset' and n['id'] != dataset]
+                transforms = [n for n in nodes if n.get('type') == 'transformation']
+                direction_word = "upstream ancestors" if direction == 'upstream' else "downstream dependents"
+                print(f"\n`{dataset}` has {node_count - 1} {direction_word} across {edge_count} edges.")
+                if datasets:
+                    ds_names = ', '.join(f"`{n['id']}`" for n in datasets[:6])
+                    suffix = f" (and {len(datasets)-6} more)" if len(datasets) > 6 else ""
+                    print(f"Datasets:        {ds_names}{suffix}")
+                if transforms:
+                    tr_names = ', '.join(f"`{n['id']}`" for n in transforms[:4])
+                    suffix = f" (and {len(transforms)-4} more)" if len(transforms) > 4 else ""
+                    print(f"Transformations: {tr_names}{suffix}")
+
+            if nodes and node_count > 1:
+                print(f"\nEvidence citations ({min(node_count, 12)} of {node_count}):")
+                for node in nodes[:12]:
+                    prov = node.get('provenance', {})
+                    ev = prov.get('evidence_type', '?')
+                    conf = prov.get('confidence', 0.0)
+                    src = prov.get('source_file', '') or ''
+                    lr = prov.get('line_range')
+                    status = prov.get('resolution_status', '')
+                    if ev in ('tree_sitter', 'sqlglot', 'yaml_parse'):
+                        trust = 'static'
+                    elif ev == 'llm':
+                        trust = 'llm'
+                    else:
+                        trust = 'heuristic'
+                    src_short = src.split('/')[-1] if src else '—'
+                    line_part = f":{lr[0]}-{lr[1]}" if lr else ""
+                    print(f"  {node['id']:30s}  [{trust}/{ev}  {conf:.2f}  {src_short}{line_part}  {status}]")
+
+        # ── BlastRadiusTool ─────────────────────────────────────────────────
+        elif 'affected_modules' in result:
+            module = result['module']
+            amc = result.get('affected_module_count', 0)
+            affected = result.get('affected_modules', [])
+            affected_datasets = result.get('affected_datasets', [])
+            ds_map = {d.get('name', ''): d for d in affected_datasets if isinstance(d, dict)}
+
+            print(f"\nModule: {module}")
+            print(f"Affected modules: {amc}")
+
+            if amc == 0:
+                print(f"\n`{module}` has no downstream dependents — safe to change in isolation.")
+            else:
+                print(f"\nBreaking `{module}` cascades to {amc} downstream node(s):\n")
+                for item in affected[:15]:
+                    name = item if isinstance(item, str) else item.get('name', str(item))
+                    ds = ds_map.get(name, {})
+                    prov = ds.get('provenance', {})
+                    ev = prov.get('evidence_type', '?')
+                    conf = prov.get('confidence', 0.0)
+                    src = prov.get('source_file', ds.get('discovered_in', '')) or ''
+                    lr = prov.get('line_range')
+                    if ev in ('tree_sitter', 'sqlglot', 'yaml_parse'):
+                        trust = 'static'
+                    elif ev == 'llm':
+                        trust = 'llm'
+                    else:
+                        trust = 'heuristic'
+                    src_short = src.split('/')[-1] if src else '—'
+                    line_part = f":{lr[0]}-{lr[1]}" if lr else ""
+                    node_type = ds.get('node_type', '')
+                    type_label = f" ({node_type})" if node_type else ""
+                    print(f"  - {name}{type_label}")
+                    if ev != '?':
+                        print(f"    [{trust}/{ev}  conf={conf:.2f}  file={src_short}{line_part}]")
+                if amc > 15:
+                    print(f"  ... and {amc - 15} more")
+
+        # ── ExplainModuleTool ───────────────────────────────────────────────
+        elif 'summary' in result:
+            module_info = result.get('module', {})
+            prov_chain = result.get('provenance_chain', [])
+
             print(f"\n{result['summary']}")
-        
+
+            if prov_chain:
+                print("\nEvidence citations:")
+                labels = ['structure', 'purpose', 'domain']
+                for i, p in enumerate(prov_chain):
+                    ev = p.get('evidence_type', '?')
+                    conf = p.get('confidence', 0.0)
+                    src = p.get('source', p.get('source_file', '')) or ''
+                    lr = p.get('line_range')
+                    status = p.get('resolution_status', '')
+                    if ev in ('tree_sitter', 'sqlglot', 'yaml_parse'):
+                        trust = 'static-analysis'
+                    elif ev == 'llm':
+                        trust = 'llm-inference'
+                    else:
+                        trust = 'heuristic'
+                    src_short = src.split('/')[-1] if '/' in src else src
+                    line_part = f":{lr[0]}-{lr[1]}" if lr else ""
+                    label = labels[i] if i < len(labels) else f"step{i}"
+                    print(f"  [{label}]  method={trust}({ev})  conf={conf:.2f}  status={status}  file={src_short}{line_part}")
+
+        elif result.get('found') is False:
+            path = result.get('path', '')
+            msg = result.get('provenance', {}).get('message', 'not found')
+            print(f"\n`{path}` — {msg}")
+            modules_by_path = self.tools['explain_module'].modules_by_path
+            query_lower = path.lower()
+            suggestions = [p for p in modules_by_path if query_lower.split('/')[-1] in p.lower()][:3]
+            if suggestions:
+                print("Did you mean:")
+                for s in suggestions:
+                    print(f"  - {s}")
+
+        else:
+            for k, v in result.items():
+                if k not in ('query_metadata', 'provenance'):
+                    print(f"  {k}: {v}")
+
         print("-" * 80)

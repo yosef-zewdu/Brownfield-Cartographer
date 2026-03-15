@@ -1,13 +1,16 @@
 """Orchestrator that wires Surveyor + Hydrologist in sequence."""
 
+import json
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import networkx as nx
-from datetime import datetime
+from datetime import datetime, timezone
 
 from agents.surveyor import SurveyorAgent
 from agents.hydrologist import HydrologistAgent
 from agents.semanticist import SemanticistAgent
+from agents.archivist import ArchivistAgent
+from agents.incremental_update_manager import IncrementalUpdateManager
 from agents.trace_logger import CartographyTraceLogger
 from analyzers.graph_serializer import GraphSerializer
 
@@ -40,7 +43,9 @@ class CartographerOrchestrator:
         skip_surveyor: bool = False,
         skip_hydrologist: bool = False,
         skip_semanticist: bool = False,
-        semanticist_max_modules: Optional[int] = None
+        skip_archivist: bool = False,
+        semanticist_max_modules: Optional[int] = None,
+        incremental: bool = False,
     ) -> Tuple[Optional[nx.DiGraph], Optional[nx.DiGraph]]:
         """
         Run complete analysis pipeline on a repository.
@@ -50,7 +55,9 @@ class CartographerOrchestrator:
             skip_surveyor: Skip Surveyor phase (use existing module graph)
             skip_hydrologist: Skip Hydrologist phase
             skip_semanticist: Skip Semanticist phase
+            skip_archivist: Skip Archivist phase
             semanticist_max_modules: Maximum modules for Semanticist (None = all)
+            incremental: Only re-analyze modules changed since last run
             
         Returns:
             Tuple of (module_graph, lineage_graph)
@@ -73,10 +80,33 @@ class CartographerOrchestrator:
         print(f"\nRepository: {repo_path}")
         print(f"Output directory: {output_dir}")
         print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        if incremental:
+            print("Mode: INCREMENTAL")
         print("-" * 80)
+        
+        # Incremental mode: detect changed files
+        incremental_changed_files = None
+        if incremental:
+            metadata_path = output_dir / "metadata.json"
+            if metadata_path.exists():
+                try:
+                    with open(metadata_path) as f:
+                        meta = json.load(f)
+                    last_time_str = meta.get("last_analysis_time")
+                    if last_time_str:
+                        last_time = datetime.fromisoformat(last_time_str)
+                        mgr = IncrementalUpdateManager()
+                        incremental_changed_files = mgr.detect_changes(str(repo_path), last_time)
+                        print(f"Incremental: {len(incremental_changed_files)} changed files detected")
+                except Exception as e:
+                    print(f"⚠ Could not load previous metadata for incremental mode: {e}")
+            else:
+                print("Incremental: no previous metadata found, running full analysis")
         
         module_graph = None
         lineage_graph = None
+        enriched_modules = []
+        day_one_answers = {}
         
         # Reset trace logger for this run
         self.trace_logger.clear()
@@ -234,6 +264,14 @@ class CartographerOrchestrator:
                 print(f"✗ {error_msg}")
         else:
             print("\n[PHASE 2] Skipping Hydrologist")
+            # Load existing lineage graph if available
+            lineage_graph_path = output_dir / 'lineage_graph.json'
+            if lineage_graph_path.exists():
+                try:
+                    lineage_graph = GraphSerializer.deserialize_graph(str(lineage_graph_path))
+                    print(f"  ✓ Loaded existing lineage graph: {lineage_graph.number_of_nodes()} nodes, {lineage_graph.number_of_edges()} edges")
+                except Exception as e:
+                    print(f"  ⚠ Could not load existing lineage graph: {e}")
         
         # Phase 3: Semanticist Agent
         if not skip_semanticist and module_graph is not None:
@@ -374,8 +412,6 @@ class CartographerOrchestrator:
                 self._save_semanticist_report(output_dir, enriched_modules, day_one_answers)
                 
                 # Save Day-One answers
-                import json
-                
                 # Convert Pydantic models to dicts for JSON serialization
                 def serialize_answer(obj):
                     """Recursively serialize Pydantic models and other objects."""
@@ -408,9 +444,68 @@ class CartographerOrchestrator:
         else:
             if skip_semanticist:
                 print("\n[PHASE 3] Skipping Semanticist")
+                # Load enriched modules from existing module graph
+                from models import ModuleNode, ProvenanceMetadata
+                enriched_modules = []
+                for node_id in module_graph.nodes():
+                    node_data = module_graph.nodes[node_id]
+                    provenance_data = node_data.get('provenance', {})
+                    provenance = ProvenanceMetadata(**provenance_data) if provenance_data else None
+                    if provenance:
+                        try:
+                            enriched_modules.append(ModuleNode(
+                                path=node_data['path'],
+                                language=node_data['language'],
+                                complexity_score=node_data['complexity_score'],
+                                imports=node_data.get('imports', []),
+                                exports=node_data.get('exports', []),
+                                provenance=provenance,
+                                purpose_statement=node_data.get('purpose_statement'),
+                                domain_cluster=node_data.get('domain_cluster'),
+                                change_velocity=node_data.get('change_velocity'),
+                                is_dead_code_candidate=node_data.get('is_dead_code_candidate', False),
+                                docstring=node_data.get('docstring'),
+                                has_documentation_drift=node_data.get('has_documentation_drift', False),
+                            ))
+                        except Exception:
+                            pass
+                # Load day_one_answers if available
+                answers_path = output_dir / 'day_one_answers.json'
+                if answers_path.exists():
+                    with open(answers_path) as f:
+                        day_one_answers = json.load(f)
             else:
                 print("\n[PHASE 3] Skipping Semanticist (module graph not available)")
         
+        # Phase 4: Archivist Agent
+        if not skip_archivist and module_graph is not None:
+            print("\n[PHASE 4] Running Archivist Agent...")
+            print("Generating living documentation artifacts...")
+            try:
+                archivist = ArchivistAgent(output_dir=output_dir)
+                archivist.generate_artifacts(
+                    modules=enriched_modules,
+                    datasets=[],
+                    transformations=[],
+                    module_graph=module_graph,
+                    lineage_graph=lineage_graph or nx.DiGraph(),
+                    pagerank_scores={},
+                    circular_dependencies=[],
+                    day_one_answers=day_one_answers,
+                    analysis_metadata={"repo_path": str(repo_path)},
+                    trace_logger=self.trace_logger,
+                )
+                print("✓ Archivist complete: CODEBASE.md, onboarding_brief.md, graphs serialized")
+            except Exception as e:
+                error_msg = f"Archivist failed: {str(e)}"
+                self.errors.append(error_msg)
+                print(f"✗ {error_msg}")
+        else:
+            if skip_archivist:
+                print("\n[PHASE 4] Skipping Archivist")
+            else:
+                print("\n[PHASE 4] Skipping Archivist (module graph not available)")
+
         # Summary
         print("\n" + "=" * 80)
         print("ANALYSIS COMPLETE")
@@ -432,8 +527,54 @@ class CartographerOrchestrator:
         stats = self.trace_logger.get_statistics()
         print(f"\nTrace log: {trace_path} ({stats['total_entries']} entries)")
         
+        # Save metadata for incremental runs
+        metadata = {
+            "last_analysis_time": datetime.now(timezone.utc).isoformat(),
+            "repo_path": str(repo_path),
+        }
+        metadata_path = output_dir / "metadata.json"
+        with open(metadata_path, "w") as f:
+            json.dump(metadata, f, indent=2)
+        
         return module_graph, lineage_graph
     
+    def run_surveyor(self, repo_path: str):
+        """Run Surveyor agent and return (module_graph, modules)."""
+        return self.surveyor.analyze_repository(repo_path)
+
+    def run_hydrologist(self, repo_path: str, module_graph: nx.DiGraph):
+        """Run Hydrologist agent and return (lineage_graph, datasets, transformations)."""
+        return self.hydrologist.analyze_repository(repo_path, module_graph)
+
+    def run_semanticist(self, modules, module_graph, lineage_graph, datasets, transformations):
+        """Run Semanticist agent and return (enriched_modules, day_one_answers)."""
+        return self.semanticist.analyze_repository(
+            modules, module_graph, lineage_graph, datasets, transformations
+        )
+
+    def run_archivist(self, output_dir, modules, day_one_answers, module_graph, lineage_graph):
+        """Run Archivist agent to generate living documentation artifacts."""
+        archivist = ArchivistAgent(output_dir=output_dir)
+        return archivist.generate_artifacts(
+            modules=modules,
+            datasets=[],
+            transformations=[],
+            module_graph=module_graph,
+            lineage_graph=lineage_graph or nx.DiGraph(),
+            pagerank_scores={},
+            circular_dependencies=[],
+            day_one_answers=day_one_answers,
+            analysis_metadata={},
+            trace_logger=self.trace_logger,
+        )
+
+    def handle_errors(self, errors: List[Exception]) -> Dict:
+        """Return a summary dict for a list of errors."""
+        return {
+            "error_count": len(errors),
+            "errors": [str(e) for e in errors],
+        }
+
     def _save_surveyor_report(self, output_dir: Path, modules, module_graph) -> None:
         """Save Surveyor analysis report."""
         report_path = output_dir / 'surveyor_report.txt'

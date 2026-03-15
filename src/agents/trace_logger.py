@@ -2,6 +2,7 @@
 
 import json
 import logging
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Literal, Optional, Any
@@ -68,7 +69,9 @@ class CartographyTraceLogger:
     """
     
     def __init__(self):
-        """Initialize CartographyTraceLogger."""
+        """Initialize CartographyTraceLogger with a unique run ID."""
+        self.run_id: str = str(uuid.uuid4())
+        self.started_at: str = datetime.now().isoformat()
         self.log_entries: List[Any] = []
     
     def log_action(
@@ -186,27 +189,39 @@ class CartographyTraceLogger:
     
     def flush(self, output_path: Path) -> None:
         """
-        Write accumulated log entries to JSONL file with full provenance chain.
-        
+        Append accumulated log entries to JSONL file, preceded by a run-start header.
+
         Args:
-            output_path: Path to write cartography_trace.jsonl
-        
+            output_path: Path to write/append cartography_trace.jsonl
+
         Raises:
             IOError: If file writing fails
         """
         try:
-            # Ensure parent directory exists
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Write JSONL format (one JSON object per line)
-            with open(output_path, 'w', encoding='utf-8') as f:
+
+            with open(output_path, 'a', encoding='utf-8') as f:
+                # Run-start header so readers can identify run boundaries
+                header = {
+                    "entry_type": "run_start",
+                    "run_id": self.run_id,
+                    "started_at": self.started_at,
+                    "flushed_at": datetime.now().isoformat(),
+                    "entry_count": len(self.log_entries),
+                }
+                f.write(json.dumps(header) + '\n')
+
                 for entry in self.log_entries:
-                    # Convert Pydantic model to dict and write as JSON line
-                    json_line = entry.model_dump_json()
-                    f.write(json_line + '\n')
-            
-            logger.info(f"Trace log written to {output_path} ({len(self.log_entries)} entries)")
-            
+                    # Inject run_id into every entry for easy filtering
+                    data = json.loads(entry.model_dump_json())
+                    data["run_id"] = self.run_id
+                    f.write(json.dumps(data) + '\n')
+
+            logger.info(
+                f"Trace log appended to {output_path} "
+                f"(run={self.run_id}, {len(self.log_entries)} entries)"
+            )
+
         except IOError as e:
             logger.error(f"Failed to write trace log to {output_path}: {e}")
             raise

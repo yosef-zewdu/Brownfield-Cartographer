@@ -35,14 +35,8 @@ class DomainClusterer:
             except Exception as e:
                 logger.warning(f"Failed to initialize LLM: {e}")
         
-        # Initialize sentence-transformers model
-        try:
-            from sentence_transformers import SentenceTransformer
-            self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-            logger.info("Initialized sentence-transformers model: all-MiniLM-L6-v2")
-        except Exception as e:
-            logger.warning(f"Failed to initialize sentence-transformers: {e}")
-            logger.warning("Falling back to simple embeddings")
+        # Defer sentence-transformers model loading until first use
+        self._embedding_model_name = 'all-MiniLM-L6-v2'
     
     def embed_purposes(
         self,
@@ -70,6 +64,16 @@ class DomainClusterer:
             logger.warning("No modules with purpose statements to embed")
             return embeddings
         
+        # Lazy-load sentence-transformers model on first use
+        if self.embedding_model is None:
+            try:
+                from sentence_transformers import SentenceTransformer
+                self.embedding_model = SentenceTransformer(self._embedding_model_name)
+                logger.info(f"Initialized sentence-transformers model: {self._embedding_model_name}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize sentence-transformers: {e}")
+                logger.warning("Falling back to simple embeddings")
+
         # Use sentence-transformers if available
         if self.embedding_model:
             try:

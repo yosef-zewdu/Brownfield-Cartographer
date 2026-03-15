@@ -317,16 +317,12 @@ class DBTProjectAnalyzer:
         return datasets
     
     def _parse_all_schema_files(self):
-        """Parse all schema.yml files in the models directory."""
+        """Parse all schema/sources YAML files in the models directory."""
         if not self.models_dir or not self.models_dir.exists():
             return
-        
-        # Find all schema.yml files recursively
+
         for schema_file in self.models_dir.rglob("*.yml"):
-            if 'schema' in schema_file.name.lower():
-                self.parse_schema_yml(str(schema_file))
-        
-        # Also check for .yaml extension
+            self.parse_schema_yml(str(schema_file))
+
         for schema_file in self.models_dir.rglob("*.yaml"):
-            if 'schema' in schema_file.name.lower():
-                self.parse_schema_yml(str(schema_file))
+            self.parse_schema_yml(str(schema_file))
