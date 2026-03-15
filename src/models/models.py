@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Dict, List, Literal, Optional, Tuple, Union
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator, field_serializer, ConfigDict
 
 
 class ProvenanceMetadata(BaseModel):
@@ -26,11 +26,7 @@ class ProvenanceMetadata(BaseModel):
 class ModuleNode(BaseModel):
     """Node representing a code module/file with metadata."""
     
-    model_config = ConfigDict(
-        json_encoders={
-            datetime: lambda v: v.isoformat() if v else None
-        }
-    )
+    model_config = ConfigDict()
     
     path: str
     language: str
@@ -43,6 +39,10 @@ class ModuleNode(BaseModel):
     imports: List[str] = Field(default_factory=list)
     exports: List[str] = Field(default_factory=list)
     docstring: Optional[str] = None
+
+    @field_serializer('last_modified')
+    def serialize_last_modified(self, v: Optional[datetime]) -> Optional[str]:
+        return v.isoformat() if v else None
     has_documentation_drift: bool = False
     provenance: ProvenanceMetadata
 

@@ -127,6 +127,10 @@ class PurposeStatementGenerator:
             logger.debug(f"Processing batch {batch_num}/{total_batches}")
             
             for module in batch:
+                # Skip if already has a purpose statement (e.g. from previous run)
+                if module.purpose_statement:
+                    enriched_modules.append(module)
+                    continue
                 purpose = self.generate_purpose(module)
                 if purpose:
                     module.purpose_statement = purpose
