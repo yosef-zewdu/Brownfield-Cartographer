@@ -253,12 +253,16 @@ def test_flush_creates_jsonl_file(trace_logger, temp_output_path):
     with open(temp_output_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     
-    assert len(lines) == 3
+    assert len(lines) == 4
     
     # Parse each line as JSON
-    entry1 = json.loads(lines[0])
-    entry2 = json.loads(lines[1])
-    entry3 = json.loads(lines[2])
+    header = json.loads(lines[0])
+    entry1 = json.loads(lines[1])
+    entry2 = json.loads(lines[2])
+    entry3 = json.loads(lines[3])
+    
+    assert header['entry_type'] == 'run_start'
+    assert 'run_id' in header
     
     assert entry1['entry_type'] == 'action'
     assert entry1['agent'] == 'surveyor'
@@ -292,15 +296,19 @@ def test_flush_creates_parent_directory(trace_logger, tmp_path):
 
 
 def test_flush_handles_empty_log(trace_logger, temp_output_path):
-    """Test flushing an empty log."""
+    """Test flushing an empty log writes only the run_start header."""
     trace_logger.flush(temp_output_path)
     
     assert temp_output_path.exists()
     
     with open(temp_output_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+        lines = f.readlines()
     
-    assert content == ""
+    # Only the run_start header should be present
+    assert len(lines) == 1
+    header = json.loads(lines[0])
+    assert header['entry_type'] == 'run_start'
+    assert header['entry_count'] == 0
 
 
 def test_get_statistics_empty(trace_logger):
@@ -483,8 +491,9 @@ def test_jsonl_format_integrity(trace_logger, temp_output_path):
     
     trace_logger.flush(temp_output_path)
     
-    # Read back and verify
+    # Read back and verify — first line is run_start header, second is the action entry
     with open(temp_output_path, 'r', encoding='utf-8') as f:
+        f.readline()  # skip run_start header
         line = f.readline()
     
     entry = json.loads(line)

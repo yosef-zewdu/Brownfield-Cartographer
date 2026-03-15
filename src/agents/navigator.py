@@ -893,17 +893,18 @@ class NavigatorAgent:
                 result = tool(query, top_k=top_k)
             
             elif tool_name == 'trace_lineage':
-                direction = kwargs.get('direction', 'downstream')
                 max_depth = kwargs.get('max_depth', None)
                 # Extract dataset name from natural language query
                 dataset = self._extract_dataset_name(query)
-                # Detect direction from query keywords; default to upstream
-                # (most useful: "where does X come from?")
-                query_lower = query.lower()
-                if any(kw in query_lower for kw in ['downstream', 'descendants', 'consumers', 'feeds into', 'impacts']):
-                    direction = 'downstream'
+                # Use explicit direction kwarg if provided; otherwise infer from query
+                if 'direction' in kwargs:
+                    direction = kwargs['direction']
                 else:
-                    direction = 'upstream'
+                    query_lower = query.lower()
+                    if any(kw in query_lower for kw in ['downstream', 'descendants', 'consumers', 'feeds into', 'impacts']):
+                        direction = 'downstream'
+                    else:
+                        direction = 'upstream'
                 result = tool(dataset, direction=direction, max_depth=max_depth)
             
             elif tool_name == 'blast_radius':
@@ -1172,7 +1173,11 @@ class NavigatorAgent:
                     if purpose:
                         wrapped = purpose if len(purpose) <= 220 else purpose[:217] + '...'
                         print(f"     {wrapped}")
-                    print(fmt_evidence(prov))
+                    ev = prov.get('evidence_type', '?')
+                    conf = prov.get('confidence', 0.0)
+                    src = prov.get('source_file', '') or path
+                    status = prov.get('resolution_status', '')
+                    print(f"  Provenance: evidence={ev}  conf={conf:.2f}  status={status}  file={src}")
                     print()
 
         # ── TraceLineageTool ────────────────────────────────────────────────
@@ -1182,6 +1187,9 @@ class NavigatorAgent:
             edge_count = result.get('edge_count', 0)
             dataset = result.get('dataset', '')
             nodes = result.get('nodes', [])
+
+            print(f"\nLineage: {direction} from `{dataset}`")
+            print(f"Nodes: {node_count}  Edges: {edge_count}")
 
             if node_count <= 1:
                 if direction == 'downstream':
@@ -1228,6 +1236,9 @@ class NavigatorAgent:
             affected = result.get('affected_modules', [])
             affected_datasets = result.get('affected_datasets', [])
             ds_map = {d.get('name', ''): d for d in affected_datasets if isinstance(d, dict)}
+
+            print(f"\nModule: {module}")
+            print(f"Affected modules: {amc}")
 
             if amc == 0:
                 print(f"\n`{module}` has no downstream dependents — safe to change in isolation.")
