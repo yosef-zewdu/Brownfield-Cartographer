@@ -29,6 +29,8 @@ dependencies = [
     "langchain-openai>=0.0.5",
     "langchain-google-genai>=0.0.6",
     "sentence-transformers>=2.2.0",
+    "graphviz>=0.21",
+    "pyvis>=0.3.2",
 ]
 
 [project.optional-dependencies]
